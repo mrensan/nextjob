@@ -1,0 +1,24 @@
+[project]
+name = "nextjob"
+version = "0.0.1"
+authors = [
+    { name="Shahram Ensan", email="shahram@ensan.net" },
+]
+description = "GUI application for tracking the interview process for the next job."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "setuptools>=75.1.0",
+    "pyside6>=6.7.2",
+    "tinydb>=4.8.0",
+    "pydantic>=2.9.2"
+]
+
+[project.urls]
+Homepage = "https://github.com/mrensan/nextjob"
+Issues = "https://github.com/mrensan/nextjob/issues"
