@@ -27,4 +27,11 @@ jobs:
           pip install pytest pytest-qt PySide6
 
       - name: Run tests
-        run: pytest
+      # Use X virtual framebuffer (Xvfb) to run GUI tests in headless mode
+      # and set environment variables to disable GPU acceleration and avoid OpenGL issues
+        run: |
+          xvfb-run -s "-screen 0 1024x768x24" pytest
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_FORCE_STDERR_LOGGING: 1
+          DISPLAY: ":99"
