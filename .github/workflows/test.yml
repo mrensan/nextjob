@@ -1,0 +1,37 @@
+name: Python GUI Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.12.6"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1-mesa-glx xvfb
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-qt PySide6
+
+      - name: Run tests
+      # Use X virtual framebuffer (Xvfb) to run GUI tests in headless mode
+      # and set environment variables to disable GPU acceleration and avoid OpenGL issues
+        run: |
+          xvfb-run -s "-screen 0 1024x768x24" pytest
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_FORCE_STDERR_LOGGING: 1
+          DISPLAY: ":99"
