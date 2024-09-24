@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+disable=missing-module-docstring, no-name-in-module
+
+[TYPECHECK]
+ignored-modules=PySide6.QtWidgets
