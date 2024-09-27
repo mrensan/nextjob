@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
+
 def test_widget_creation(qtbot):
     """Test if the QWidget is created and shown correctly."""
     widget = QWidget()
