@@ -4,8 +4,8 @@ from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt, QAbstractItemModel
 
-from backend.models import Company, Role, Interview
-from gui.treeitem import TreeItem
+from ..backend.models import Company, Role, Interview
+from .treeitem import TreeItem
 
 VISIBLE_COLUMNS_COUNT = 3
 
