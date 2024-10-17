@@ -1,9 +1,9 @@
 from PySide6.QtCore import QModelIndex
 from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView
 
-from backend.data_service import DataService
-from backend.models import Company
-from gui.treemodel import TreeModel
+from ..backend.data_service import DataService
+from ..backend.models import Company
+from .treemodel import TreeModel
 
 MAIN_WINDOW_HEIGHT = 800
 

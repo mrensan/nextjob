@@ -4,7 +4,7 @@ from typing import List
 
 from tinydb import TinyDB, Query
 
-from backend.models import Company
+from .models import Company
 
 
 class DataService:
