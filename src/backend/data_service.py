@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import List
 
 from tinydb import TinyDB, Query
@@ -10,7 +11,9 @@ class DataService:
     """Class for data service."""
 
     def __init__(self):
-        self.db = TinyDB("../../db.json")
+        database_absolute_path = Path(__file__).resolve().parent / "../../db.json"
+
+        self.db = TinyDB(database_absolute_path)
         self.companies_table = self.db.table("companies")
 
     def get_companies(self) -> List[Company]:
