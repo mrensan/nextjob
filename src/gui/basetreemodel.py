@@ -1,24 +1,19 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt, QAbstractItemModel
 
-from backend.models import Company, Role, Interview
 from gui.treeitem import TreeItem
 
-VISIBLE_COLUMNS_COUNT = 3
 
-
-class TreeModel(QAbstractItemModel):
+class BaseTreeModel(QAbstractItemModel):
     """The model for the tree view."""
 
-    def __init__(self, headers: list, data: List[Company], parent=None):
+    def __init__(self, headers: list, parent=None):
         super().__init__(parent)
 
         self.root_data = headers
         self.root_item = TreeItem(self.root_data.copy())
-        self.setup_model_data(data, self.root_item)
 
     # pylint: disable=invalid-name, unused-argument
     def columnCount(self, parent: QModelIndex = None) -> int:
@@ -178,41 +173,6 @@ class TreeModel(QAbstractItemModel):
             self.headerDataChanged.emit(orientation, section, section)
 
         return result
-
-    def setup_model_data(self, companies: List[Company], parent: TreeItem):
-        """Sets up the model data."""
-        for company in companies:
-            self._insert_company(company, parent)
-
-    def _insert_company(self, company: Company, parent: TreeItem):
-        parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 1)
-        child = parent.last_child()
-        child.set_data(0, company.name)
-        child.set_data(1, "" if company.website is None else company.website)
-        child.set_data(2, ", ".join([p.name for p in company.recruiters]))
-        child.set_data(3, company.uuid)
-
-        for role in company.roles:
-            self._insert_role(role, child)
-
-    def _insert_role(self, role: Role, parent: TreeItem):
-        parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 1)
-        child = parent.last_child()
-        child.set_data(0, role.title)
-        child.set_data(1, f"{role.applied_date} (applied date)")
-        child.set_data(2, f"{role.employment_type.value}/{role.work_location.value}")
-        child.set_data(3, role.uuid)
-
-        for interview in role.interviews:
-            self._insert_interview(interview, child)
-
-    def _insert_interview(self, interview: Interview, parent: TreeItem):
-        parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 1)
-        child = parent.last_child()
-        child.set_data(0, f"({interview.sequence}) {interview.title}")
-        child.set_data(1, f"{interview.type.value} at {interview.date}")
-        child.set_data(2, ", ".join([p.name for p in interview.interviewers]))
-        child.set_data(3, interview.uuid)
 
     def _repr_recursion(self, item: TreeItem, indent: int = 0) -> str:
         result = " " * indent + repr(item) + "\n"

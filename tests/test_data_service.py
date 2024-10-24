@@ -60,9 +60,86 @@ class TestDataService(unittest.TestCase):
         self.mock_companies_table.search.assert_called_once_with(query.uuid == "12345")
         self.assertIsNone(result)
 
+    def test_get_company_by_interview_uuid_found(self):
+        """Test get_company_by_interview_uuid found"""
+        mock_company = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "recruiters": [],
+            "roles": [
+                {
+                    "uuid": "role123",
+                    "title": "Engineer",
+                    "applied_date": str(date.today()),
+                    "interviews": [
+                        {
+                            "uuid": "interview123",
+                            "sequence": 1,
+                            "title": "Recruiter",
+                            "type": "Recruiter",
+                            "date": str(date.today())
+                        }
+                    ]
+                }
+            ]
+        }
+        self.mock_companies_table.search.return_value = [mock_company]
+        result = self.data_service.get_company_by_interview_uuid("interview123")
+
+        query = Query()
+        self.mock_companies_table.search.assert_called_once_with(
+            query.roles.any(query.interviews.any(query.uuid == "interview123"))
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Company)
+        self.assertEqual(result.name, "Test Company")
+
+    def test_get_company_by_interview_uuid_not_found(self):
+        """Test get_company_by_interview_uuid not found"""
+        self.mock_companies_table.search.return_value = []
+        result = self.data_service.get_company_by_interview_uuid("interview123")
+
+        query = Query()
+        self.mock_companies_table.search.assert_called_once_with(
+            query.roles.any(query.interviews.any(query.uuid == "interview123"))
+        )
+        self.assertIsNone(result)
+
+    def test_get_company_by_role_uuid_found(self):
+        """Test get_company_by_role_uuid found"""
+        mock_company = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "recruiters": [],
+            "roles": [
+                {"uuid": "role123", "title": "Engineer", "applied_date": str(date.today())}
+            ]
+        }
+        self.mock_companies_table.search.return_value = [mock_company]
+        result = self.data_service.get_company_by_role_uuid("role123")
+
+        query = Query()
+        self.mock_companies_table.search.assert_called_once_with(
+            query.roles.any(query.uuid == "role123")
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Company)
+        self.assertEqual(result.name, "Test Company")
+
+    def test_get_company_by_role_uuid_not_found(self):
+        """Test get_company_by_role_uuid not found"""
+        self.mock_companies_table.search.return_value = []
+        result = self.data_service.get_company_by_role_uuid("role123")
+
+        query = Query()
+        self.mock_companies_table.search.assert_called_once_with(
+            query.roles.any(query.uuid == "role123")
+        )
+        self.assertIsNone(result)
+
     @patch('backend.models.Company.model_dump_json')
-    def test_save_company(self, mock_model_dump_json):
-        """Test save company"""
+    def test_insert_company(self, mock_model_dump_json):
+        """Test insert_company"""
         mock_company = Company(
             uuid="12345",
             name="Test Company",
@@ -77,9 +154,34 @@ class TestDataService(unittest.TestCase):
             ]
         )
         mock_model_dump_json.return_value = '{"uuid": "12345", "name": "Test Company"}'
-        self.data_service.save_company(mock_company)
+        self.data_service.insert_company(mock_company)
 
         mock_model_dump_json.assert_called_once_with(exclude_none=True)
         self.mock_companies_table.insert.assert_called_once_with(
             {"uuid": "12345", "name": "Test Company"}
+        )
+
+    @patch('backend.models.Company.model_dump_json')
+    def test_update_company(self, mock_model_dump_json):
+        """Test update_company"""
+        mock_company = Company(
+            uuid="12345",
+            name="Test Company",
+            recruiters=[Person(name="Recruiter", title=TITLE.MR)],
+            roles=[
+                Role(
+                    title="Engineer",
+                    applied_date=date.today(),
+                    employment_type=EmploymentType.FULL_TIME,
+                    work_location=WorkLocation.REMOTE
+                )
+            ]
+        )
+        mock_model_dump_json.return_value = '{"uuid": "12345", "name": "Test Company"}'
+        self.data_service.update_company(mock_company)
+
+        mock_model_dump_json.assert_called_once_with(exclude_none=True)
+        query = Query()
+        self.mock_companies_table.update.assert_called_once_with(
+            {"uuid": "12345", "name": "Test Company"}, query.uuid == "12345"
         )
