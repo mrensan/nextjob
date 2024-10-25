@@ -72,5 +72,5 @@ class Company(BaseModel):
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     name: str
     website: Optional[str] = None
-    recruiters: List[Person]
-    roles: List[Role]
+    recruiters: List[Person] = []
+    roles: List[Role] = []

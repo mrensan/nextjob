@@ -31,3 +31,7 @@ def create_save_cancel_layout(cancel_method: callable, save_method: callable) ->
     save_btn = QPushButton("Save")
     save_btn.clicked.connect(save_method)
     return get_line_layout(cancel_btn, save_btn, 1, 1)
+
+def get_attr(obj, attr, default=''):
+    """Returns an attribute from an object when it exists, otherwise returns the default value."""
+    return getattr(obj, attr, default) if obj else default
