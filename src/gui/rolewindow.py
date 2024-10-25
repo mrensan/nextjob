@@ -6,9 +6,9 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox
     QTextEdit, QTableView, QAbstractItemView
 
 from backend.data_service import DataService
-from backend.models import Company, EmploymentType, WorkLocation, Interview
+from backend.models import Company, EmploymentType, WorkLocation, Interview, Role
 from gui.basetreemodel import BaseTreeModel
-from gui.guiutils import get_line_layout, create_save_cancel_layout
+from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr
 from gui.treeitem import TreeItem
 
 MAIN_WINDOW_WIDTH = 800
@@ -33,7 +33,6 @@ class RoleWindowComponents:
 
 class RoleWindow(QDialog):
     """Role edit window."""
-    # pylint: disable=too-few-public-methods
 
     def __init__(self, item_data: list, company: Company):
         super().__init__()
@@ -46,11 +45,11 @@ class RoleWindow(QDialog):
         vertical = QVBoxLayout()
         self.components = RoleWindowComponents()
         title_label = QLabel("Title:")
-        self.components.title_value = QLineEdit(self.role.title)
+        self.components.title_value = QLineEdit(get_attr(self.role, "title"))
         vertical.addLayout(get_line_layout(title_label, self.components.title_value, 2, 3, 5))
 
         applied_date_label = QLabel("Applied Date:")
-        self.components.applied_date_value = QLineEdit(str(self.role.applied_date))
+        self.components.applied_date_value = QLineEdit(str(get_attr(self.role, "applied_date")))
         vertical.addLayout(get_line_layout(
             applied_date_label,
             self.components.applied_date_value,
@@ -62,7 +61,8 @@ class RoleWindow(QDialog):
         employment_type_label = QLabel("Employment Type:")
         self.components.employment_type_value = QComboBox()
         self.components.employment_type_value.addItems([et.value for et in EmploymentType])
-        self.components.employment_type_value.setCurrentText(self.role.employment_type.value)
+        if self.role:
+            self.components.employment_type_value.setCurrentText(self.role.employment_type.value)
         vertical.addLayout(get_line_layout(
             employment_type_label,
             self.components.employment_type_value,
@@ -74,7 +74,8 @@ class RoleWindow(QDialog):
         work_location_label = QLabel("Work Location:")
         self.components.work_location_value = QComboBox()
         self.components.work_location_value.addItems([wl.value for wl in WorkLocation])
-        self.components.work_location_value.setCurrentText(self.role.work_location.value)
+        if self.role:
+            self.components.work_location_value.setCurrentText(self.role.work_location.value)
         vertical.addLayout(get_line_layout(
             work_location_label,
             self.components.work_location_value,
@@ -85,7 +86,7 @@ class RoleWindow(QDialog):
 
         description_label = QLabel("Description:")
         vertical.addWidget(description_label)
-        self.components.description_value = QTextEdit(self.role.description)
+        self.components.description_value = QTextEdit(get_attr(self.role, "description"))
         self.components.description_value.setMaximumWidth(int(MAIN_WINDOW_WIDTH / 2))
         self.components.description_value.setMaximumHeight(80)
         vertical.addWidget(self.components.description_value)
@@ -113,7 +114,7 @@ class RoleWindow(QDialog):
             QAbstractItemView.ScrollMode.ScrollPerPixel
         )
         headers = ["Seq", "Title", "Interview type", "Date", "Interviewers"]
-        self.interviews_model = InterviewsTableModel(headers, self.role.interviews, self)
+        self.interviews_model = InterviewsTableModel(headers, get_attr(self.role, "interviews", []), self)
         self.components.interviews_table.setModel(self.interviews_model)
         self.components.interviews_table.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * .5 / 10))
         self.components.interviews_table.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * 2.6 / 10))
@@ -133,14 +134,21 @@ class RoleWindow(QDialog):
 
     def _save(self):
         data_service = DataService()
-        self.role.title = self.components.title_value.text()
-        self.role.applied_date = date.fromisoformat(self.components.applied_date_value.text())
-        self.role.employment_type = list(EmploymentType)[
-            self.components.employment_type_value.currentIndex()
-        ]
-        self.role.work_location = list(WorkLocation)[
-            self.components.work_location_value.currentIndex()
-        ]
+        title_value = self.components.title_value.text()
+        applied_date_value = date.fromisoformat(self.components.applied_date_value.text())
+        employment_type_value = list(EmploymentType)[self.components.employment_type_value.currentIndex()]
+        work_location_value = list(WorkLocation)[self.components.work_location_value.currentIndex()]
+        if not self.role:
+            self.role = Role(title=title_value,
+                             applied_date=applied_date_value,
+                             employment_type=employment_type_value,
+                             work_location=work_location_value)
+            self.company.roles.append(self.role)
+        else:
+            self.role.title = title_value
+            self.role.applied_date = applied_date_value
+            self.role.employment_type = employment_type_value
+            self.role.work_location = work_location_value
         self.role.description = self.components.description_value.toPlainText()
 
         data_service.update_company(self.company)
@@ -149,7 +157,6 @@ class RoleWindow(QDialog):
 
 class InterviewsTableModel(BaseTreeModel):
     """Table model for interviews."""
-    # pylint: disable=too-few-public-methods
 
     def __init__(self, headers: list, data: List[Interview], parent=None):
         super().__init__(headers, parent=parent)

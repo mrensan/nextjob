@@ -12,7 +12,6 @@ VISIBLE_COLUMNS_COUNT = 5
 
 class PersonsTableModel(BaseTreeModel):
     """Table model for a list of persons."""
-    # pylint: disable=too-few-public-methods
 
     def __init__(self, headers: list, data: List[Person], parent=None):
         super().__init__(headers, parent=parent)
