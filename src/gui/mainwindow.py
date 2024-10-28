@@ -3,7 +3,7 @@ from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu
+from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QMessageBox
 
 from backend.data_service import DataService
 from backend.models import Company, Role, Interview
@@ -65,20 +65,20 @@ class MainWindow(QMainWindow):
                 case RowType.COMPANY:
                     context_menu.addAction(QIcon(EDIT_ICON), "Edit Company", lambda: self._open_edit_window(index))
                     context_menu.addAction(QIcon(DELETE_ICON), "Delete Company",
-                                           lambda: self._on_row_double_clicked(index))
+                                           lambda: self._delete_row(index))
                     context_menu.addSeparator()
                     context_menu.addAction(QIcon(ADD_ICON), "Add Role", lambda: self._open_new_window(index))
                 case RowType.ROLE:
                     context_menu.addAction(QIcon(EDIT_ICON), "Edit Role", lambda: self._open_edit_window(index))
                     context_menu.addAction(QIcon(DELETE_ICON), "Delete Role",
-                                           lambda: self._on_row_double_clicked(index))
+                                           lambda: self._delete_row(index))
                     context_menu.addSeparator()
                     context_menu.addAction(QIcon(ADD_ICON), "Add Interview", lambda: self._open_new_window(index))
                 case _:
                     context_menu.addAction(QIcon(EDIT_ICON), "Edit Interview",
                                            lambda: self._open_edit_window(index))
                     context_menu.addAction(QIcon(DELETE_ICON), "Delete Interview",
-                                           lambda: self._on_row_double_clicked(index))
+                                           lambda: self._delete_row(index))
         else:
             context_menu.addAction(QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(index))
 
@@ -86,6 +86,46 @@ class MainWindow(QMainWindow):
 
     def _on_row_double_clicked(self, index: QModelIndex):
         self._open_edit_window(index)
+
+    def _delete_row(self, index: QModelIndex):
+        item_data = self.tree_model.get_item(index).item_data
+        row_type = item_data[4]
+        company_index: QModelIndex
+        row: int
+        column: int
+        match row_type:
+            case RowType.COMPANY:
+                row = index.row()
+                column = index.column()
+                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                    self.data_service.delete_company(item_data[3])
+                else:
+                    return
+            case RowType.ROLE:
+                company_index = index.parent()
+                row = company_index.row()
+                column = company_index.column()
+                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                    self.data_service.delete_role(item_data[3])
+                else:
+                    return
+            case _:
+                company_index = index.parent().parent()
+                row = company_index.row()
+                column = company_index.column()
+                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                    self.data_service.delete_interview(item_data[3])
+                else:
+                    return
+
+        self._set_tree_view_model()
+        new_index = self.tree_model.index(row, column)
+        if row_type != RowType.COMPANY:
+            self.view.expandRecursively(new_index, -1)
+
+    def _verify_delete_row(self, message: str) -> bool:
+        buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        return QMessageBox.critical(self, "Delete", message, buttons) == QMessageBox.StandardButton.Yes
 
     def _open_edit_window(self, index: QModelIndex):
         item_data = self.tree_model.get_item(index).item_data

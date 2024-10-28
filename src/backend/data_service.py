@@ -60,6 +60,30 @@ class DataService:
             self.__company_to_json(company), query.uuid == company.uuid
         )
 
+    def delete_company(self, company_uuid):
+        """Delete a company."""
+        query = Query()
+        self.companies_table.remove(query.uuid == company_uuid)
+
+    def delete_role(self, role_uuid):
+        """Delete a role."""
+        company = self.get_company_by_role_uuid(role_uuid)
+        for role in company.roles:
+            if role.uuid == role_uuid:
+                company.roles.remove(role)
+                self.update_company(company)
+                return
+
+    def delete_interview(self, interview_uuid):
+        """Delete an interview."""
+        company = self.get_company_by_interview_uuid(interview_uuid)
+        for role in company.roles:
+            for interview in role.interviews:
+                if interview.uuid == interview_uuid:
+                    role.interviews.remove(interview)
+                    self.update_company(company)
+                    return
+
     @staticmethod
     def __company_to_json(company):
         str_value = company.model_dump_json(exclude_none=True)
