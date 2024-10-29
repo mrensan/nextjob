@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTableView, QWidget
 
 from backend.models import Person
@@ -39,13 +40,20 @@ def create_person_table_view(persons: List[Person], parent: QWidget, width: int 
     """Creates a table view for a list of persons."""
     persons_table = QTableView()
     config_view_as_line_selectable(persons_table)
+    return persons_table, set_person_table_model(persons, persons_table, parent, width)
+
+
+def set_person_table_model(persons: List[Person], persons_table: QTableView, parent: QWidget,
+                           width: int = 800) -> BaseTreeModel:
+    """Sets the table model for a list of persons."""
     headers = ["Title", "Name", "Role", "Email", "Description"]
     interviewers_model = PersonsTableModel(headers, persons, parent)
     persons_table.setModel(interviewers_model)
+    persons_table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     persons_table.setColumnWidth(0, int(width * .5 / 10))
     persons_table.setColumnWidth(1, int(width * 1.75 / 10))
     persons_table.setColumnWidth(2, int(width * 2 / 10))
-    persons_table.setColumnWidth(3, int(width * 2 / 10))
-    persons_table.setColumnWidth(4, int(width * 3 / 10))
+    persons_table.setColumnWidth(3, int(width * 2.2 / 10))
+    persons_table.setColumnWidth(4, int(width * 2.8 / 10))
 
-    return persons_table, interviewers_model
+    return interviewers_model

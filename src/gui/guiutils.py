@@ -1,4 +1,8 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox
+
+ADD_ICON = ":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"
+EDIT_ICON = ":/qt-project.org/styles/commonstyle/images/desktop-32.png"
+DELETE_ICON = ":/qt-project.org/styles/commonstyle/images/critical-32.png"
 
 
 def get_line_layout(
@@ -24,14 +28,22 @@ def config_view_as_line_selectable(abstract_item_view: QAbstractItemView):
     abstract_item_view.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
 
-def create_save_cancel_layout(cancel_method: callable, save_method: callable) -> QHBoxLayout:
+def create_save_cancel_layout(cancel_method: callable, save_method: callable, first_stretch: int = 1,
+                              second_stretch: int = 1, space_stretch: int = 7) -> QHBoxLayout:
     """Creates a layout with save and cancel buttons."""
     cancel_btn = QPushButton("Cancel")
     cancel_btn.clicked.connect(cancel_method)
     save_btn = QPushButton("Save")
     save_btn.clicked.connect(save_method)
-    return get_line_layout(cancel_btn, save_btn, 1, 1)
+    return get_line_layout(cancel_btn, save_btn, first_stretch, second_stretch, space_stretch)
+
 
 def get_attr(obj, attr, default=''):
     """Returns an attribute from an object when it exists, otherwise returns the default value."""
     return getattr(obj, attr, default) if obj else default
+
+
+def verify_delete_row(message: str, parent: QWidget) -> bool:
+    """Asks the user if they want to delete a row."""
+    buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+    return QMessageBox.critical(parent, "Delete", message, buttons) == QMessageBox.StandardButton.Yes
