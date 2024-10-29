@@ -1,5 +1,6 @@
 [MESSAGES CONTROL]
 disable=missing-module-docstring, no-name-in-module, too-few-public-methods
+max-attributes=10
 
 [TYPECHECK]
 ignored-modules=PySide6.QtWidgets

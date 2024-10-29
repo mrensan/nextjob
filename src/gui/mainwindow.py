@@ -3,12 +3,13 @@ from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu
 
 from backend.data_service import DataService
 from backend.models import Company, Role, Interview
 from gui.basetreemodel import BaseTreeModel
-from gui.companywindow import CompanyWindow
+from gui.companywindow import CompanyWindow, EDIT_ICON, DELETE_ICON, ADD_ICON
+from gui.guiutils import verify_delete_row
 from gui.interviewwindow import InterviewWindow
 from gui.rolewindow import RoleWindow
 from gui.treeitem import TreeItem
@@ -18,10 +19,6 @@ MAIN_WINDOW_HEIGHT = 800
 MAIN_WINDOW_WIDTH = 1200
 
 VISIBLE_COLUMNS_COUNT = 3
-
-ADD_ICON = ":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"
-EDIT_ICON = ":/qt-project.org/styles/commonstyle/images/desktop-32.png"
-DELETE_ICON = ":/qt-project.org/styles/commonstyle/images/critical-32.png"
 
 
 class RowType(Enum):
@@ -97,7 +94,7 @@ class MainWindow(QMainWindow):
             case RowType.COMPANY:
                 row = index.row()
                 column = index.column()
-                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
                     self.data_service.delete_company(item_data[3])
                 else:
                     return
@@ -105,7 +102,7 @@ class MainWindow(QMainWindow):
                 company_index = index.parent()
                 row = company_index.row()
                 column = company_index.column()
-                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
                     self.data_service.delete_role(item_data[3])
                 else:
                     return
@@ -113,7 +110,7 @@ class MainWindow(QMainWindow):
                 company_index = index.parent().parent()
                 row = company_index.row()
                 column = company_index.column()
-                if self._verify_delete_row(f"Are you sure you want to delete {item_data[0]}?"):
+                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
                     self.data_service.delete_interview(item_data[3])
                 else:
                     return
@@ -122,10 +119,6 @@ class MainWindow(QMainWindow):
         new_index = self.tree_model.index(row, column)
         if row_type != RowType.COMPANY:
             self.view.expandRecursively(new_index, -1)
-
-    def _verify_delete_row(self, message: str) -> bool:
-        buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        return QMessageBox.critical(self, "Delete", message, buttons) == QMessageBox.StandardButton.Yes
 
     def _open_edit_window(self, index: QModelIndex):
         item_data = self.tree_model.get_item(index).item_data

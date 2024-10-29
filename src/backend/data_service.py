@@ -84,6 +84,27 @@ class DataService:
                     self.update_company(company)
                     return
 
+    def delete_interviewer(self, person_uuid, interview_uuid):
+        """Delete an interviewer."""
+        company = self.get_company_by_interview_uuid(interview_uuid)
+        for role in company.roles:
+            for interview in role.interviews:
+                if interview.uuid == interview_uuid:
+                    for person in interview.interviewers:
+                        if person.uuid == person_uuid:
+                            interview.interviewers.remove(person)
+                            self.update_company(company)
+                            return
+
+    def delete_recruiter(self, person_uuid, company_uuid):
+        """Delete a recruiter."""
+        company = self.get_company_by_uuid(company_uuid)
+        for recruiter in company.recruiters:
+            if recruiter.uuid == person_uuid:
+                company.recruiters.remove(recruiter)
+                self.update_company(company)
+                return
+
     @staticmethod
     def __company_to_json(company):
         str_value = company.model_dump_json(exclude_none=True)
