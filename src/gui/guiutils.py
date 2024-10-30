@@ -3,6 +3,8 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, Q
 ADD_ICON = ":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"
 EDIT_ICON = ":/qt-project.org/styles/commonstyle/images/desktop-32.png"
 DELETE_ICON = ":/qt-project.org/styles/commonstyle/images/critical-32.png"
+SEARCH_ICON = ":/qt-project.org/styles/commonstyle/images/filecontents-32.png"
+RESET_ICON = ":/qt-project.org/styles/commonstyle/images/cleartext-32.png"
 
 
 def get_line_layout(
