@@ -1,15 +1,11 @@
 import json
 import logging
-from pathlib import Path
 from typing import List
 
 from tinydb import TinyDB, Query
 
-from backend.datautils import flatten_dict
+from backend.datautils import flatten_dict, get_data_file
 from backend.models import Company
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
 
 
 class DataService:
@@ -17,9 +13,8 @@ class DataService:
 
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        database_absolute_path = Path(__file__).resolve().parent / "../../db.json"
 
-        self.db = TinyDB(database_absolute_path)
+        self.db = TinyDB(get_data_file())
         self.companies_table = self.db.table("companies", cache_size=0)
 
     def get_companies(self) -> List[Company]:
