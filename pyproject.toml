@@ -2,7 +2,7 @@
 name = "nextjob"
 version = "0.0.1"
 authors = [
-    { name="Shahram Ensan", email="shahram@ensan.net" },
+    { name = "Shahram Ensan", email = "shahram@ensan.net" },
 ]
 description = "GUI application for tracking the interview process for the next job."
 readme = "README.md"
@@ -24,3 +24,10 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/mrensan/nextjob"
 Issues = "https://github.com/mrensan/nextjob/issues"
+
+[project.scripts]
+nextjob = "gui.main:main"
+
+[tool.setuptools]
+packages = ["backend", "gui"]
+package-dir = { "" = "src" }
