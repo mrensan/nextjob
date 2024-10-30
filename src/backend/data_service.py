@@ -5,6 +5,7 @@ from typing import List
 
 from tinydb import TinyDB, Query
 
+from backend.datautils import flatten_dict
 from backend.models import Company
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -104,6 +105,15 @@ class DataService:
                 company.recruiters.remove(recruiter)
                 self.update_company(company)
                 return
+
+    def search_in_db(self, search_string):
+        """Search in db."""
+        results = []
+        for doc in self.companies_table.all():
+            flat_doc = flatten_dict(doc)
+            if any(search_string.lower() in value.lower() for value in flat_doc.values()):
+                results.append(doc)
+        return [Company(**document) for document in results]
 
     @staticmethod
     def __company_to_json(company):

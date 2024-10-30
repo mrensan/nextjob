@@ -345,3 +345,94 @@ class TestDataService(unittest.TestCase):
                 self.data_service.delete_recruiter("recruiter123", "12345")
                 self.assertEqual(len(mock_company.recruiters), 1)
                 mock_update_company.assert_not_called()
+
+    @patch("backend.data_service.flatten_dict")
+    def test_search_in_db_found(self, mock_flatten_dict):
+        """Test search_in_db with matching documents"""
+        mock_company_1 = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_company_2 = {
+            "uuid": "67890",
+            "name": "Another Company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_flatten_dict.side_effect = [
+            {"name": "Test Company"},
+            {"name": "Another Company"}
+        ]
+        self.mock_companies_table.all.return_value = [mock_company_1, mock_company_2]
+        result = self.data_service.search_in_db("Test")
+
+        mock_flatten_dict.assert_any_call(mock_company_1)
+        mock_flatten_dict.assert_any_call(mock_company_2)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].name, "Test Company")
+
+    @patch("backend.data_service.flatten_dict")
+    def test_search_in_db_no_match(self, mock_flatten_dict):
+        """Test search_in_db with no matching documents"""
+        mock_company_1 = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_company_2 = {
+            "uuid": "67890",
+            "name": "Another Company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_flatten_dict.side_effect = [
+            {"name": "Test Company"},
+            {"name": "Another Company"}
+        ]
+        self.mock_companies_table.all.return_value = [mock_company_1, mock_company_2]
+        result = self.data_service.search_in_db("Nonexistent")
+
+        mock_flatten_dict.assert_any_call(mock_company_1)
+        mock_flatten_dict.assert_any_call(mock_company_2)
+        self.assertEqual(len(result), 0)
+
+    @patch("backend.data_service.flatten_dict")
+    def test_search_in_db_case_insensitive(self, mock_flatten_dict):
+        """Test search_in_db case-insensitive match"""
+        mock_company = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_flatten_dict.return_value = {"name": "test company"}
+        self.mock_companies_table.all.return_value = [mock_company]
+        result = self.data_service.search_in_db("TEST")
+
+        mock_flatten_dict.assert_called_once_with(mock_company)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].name, "Test Company")
+
+    @patch("backend.data_service.flatten_dict")
+    def test_search_in_db_partial_match(self, mock_flatten_dict):
+        """Test search_in_db with partial match in multiple fields"""
+        mock_company = {
+            "uuid": "12345",
+            "name": "Test Company",
+            "description": "A testing company",
+            "recruiters": [],
+            "roles": []
+        }
+        mock_flatten_dict.return_value = {
+            "name": "Test Company",
+            "description": "A testing company"
+        }
+        self.mock_companies_table.all.return_value = [mock_company]
+        result = self.data_service.search_in_db("testing")
+
+        mock_flatten_dict.assert_called_once_with(mock_company)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].name, "Test Company")

@@ -2,14 +2,14 @@ from enum import Enum
 from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QDockWidget, QLineEdit
 
 from backend.data_service import DataService
 from backend.models import Company, Role, Interview
 from gui.basetreemodel import BaseTreeModel
 from gui.companywindow import CompanyWindow, EDIT_ICON, DELETE_ICON, ADD_ICON
-from gui.guiutils import verify_delete_row
+from gui.guiutils import verify_delete_row, SEARCH_ICON, RESET_ICON
 from gui.interviewwindow import InterviewWindow
 from gui.rolewindow import RoleWindow
 from gui.treeitem import TreeItem
@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
         self.view.doubleClicked.connect(self._on_row_double_clicked)
         self.view.customContextMenuRequested.connect(self._open_context_menu)
         self.setCentralWidget(self.view)
+        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self._get_dock_widget())
 
         self.headers = ["Title", "Details", "Recruiter(s)/Interviewer(s)"]
         self.data_service = DataService()
@@ -179,13 +180,45 @@ class MainWindow(QMainWindow):
             if detail_window.exec() == 1:
                 self._set_tree_view_model()
 
-    def _set_tree_view_model(self):
-        data_model: List[Company] = self.data_service.get_companies()
+    def _set_tree_view_model(self, data_model: List[Company] = None):
+        if data_model is None:
+            data_model: List[Company] = self.data_service.get_companies()
         self.tree_model = CompaniesTreeModel(self.headers, data_model, self)
         self.view.setModel(self.tree_model)
         self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH / 3))
         self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH / 3))
         self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH / 3))
+
+    def _get_dock_widget(self) -> QDockWidget:
+        dock = QDockWidget(self)
+        dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
+        self.search_value = QLineEdit()
+        self.search_value.setPlaceholderText("Search ...")
+        self.search_value.textChanged.connect(self._search_text_changed)
+        search_action = QAction(QIcon(SEARCH_ICON), "Search", self.search_value)
+        reset_action = QAction(QIcon(RESET_ICON), "Reset", self.search_value)
+        self.search_value.addAction(reset_action, QLineEdit.ActionPosition.TrailingPosition)
+        self.search_value.addAction(search_action, QLineEdit.ActionPosition.TrailingPosition)
+        search_action.triggered.connect(self._search_action_triggered)
+        reset_action.triggered.connect(self._reset_action_triggered)
+        dock.setWidget(self.search_value)
+        return dock
+
+    def _search_text_changed(self, text: str):
+        if len(text) > 2:
+            self._search(text)
+
+    def _search_action_triggered(self):
+        self._search(self.search_value.text())
+
+    def _reset_action_triggered(self):
+        self.search_value.setText("")
+        self._set_tree_view_model()
+
+    def _search(self, text: str):
+        search_result = self.data_service.search_in_db(text)
+        self._set_tree_view_model(search_result)
+        self.view.expandAll()
 
 
 class CompaniesTreeModel(BaseTreeModel):
