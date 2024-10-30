@@ -1,15 +1,21 @@
 import sys
-from pathlib import Path
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from gui.mainwindow import MainWindow
 
-if __name__ == '__main__':
+
+def main():
+    """Main function."""
     app = QApplication(sys.argv)
-    image_absolute_path = Path(__file__).resolve().parent / "../../images/nextjob.png"
-    app.setWindowIcon(QIcon(str(image_absolute_path)))
+    app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, False)
+    app.setWindowIcon(QIcon(":/images/nextjob.png"))
     widget = MainWindow(app)
     widget.show()
     sys.exit(app.exec())
+
+
+if __name__ == '__main__':
+    main()

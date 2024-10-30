@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/newdirectory-32.png</file>
+        <file>images/desktop-32.png</file>
+        <file>images/critical-32.png</file>
+        <file>images/filecontents-32.png</file>
+        <file>images/cleartext-32.png</file>
+        <file>images/nextjob.png</file>
+    </qresource>
+</RCC>

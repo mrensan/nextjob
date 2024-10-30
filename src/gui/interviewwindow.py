@@ -11,6 +11,8 @@ from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, v
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 
+import gui.iconsrc # pylint: disable=unused-import
+
 MAIN_WINDOW_WIDTH = 800
 
 VISIBLE_COLUMNS_COUNT = 5
