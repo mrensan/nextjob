@@ -1,6 +1,6 @@
 [MESSAGES CONTROL]
 disable=missing-module-docstring, no-name-in-module, too-few-public-methods
-max-attributes=10
+max-attributes=15
 max-public-methods=30
 
 [TYPECHECK]

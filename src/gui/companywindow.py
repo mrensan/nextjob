@@ -44,7 +44,7 @@ class CompanyWindow(QDialog):
         vertical.addWidget(recruiters_label)
 
         self.recruiters_table, self.recruiters_model = create_person_table_view(
-            get_attr(company, "recruiters", []), self)
+            get_attr(company, "recruiters", []), self, MAIN_WINDOW_WIDTH)
         self.recruiters_table.customContextMenuRequested.connect(self._open_context_menu)
         vertical.addWidget(self.recruiters_table)
 

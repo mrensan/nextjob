@@ -53,6 +53,7 @@ class Interview(BaseModel):
     title: str
     type: InterviewType
     date: date
+    description: Optional[str] = None
     interviewers: Optional[List[Person]] = []
 
 
