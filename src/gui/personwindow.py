@@ -6,7 +6,7 @@ from backend.data_service import DataService
 from backend.models import Company, TITLE, Person, Interview
 from gui.guiutils import get_line_layout, get_attr, create_save_cancel_layout
 
-MAIN_WINDOW_WIDTH = 500
+MAIN_WINDOW_WIDTH = 700
 
 
 class PersonWindow(QDialog):
@@ -27,25 +27,24 @@ class PersonWindow(QDialog):
         self.title_value.addItems([t.value for t in TITLE])
         if self.person:
             self.title_value.setCurrentText(self.person.title.value)
-        vertical.addLayout(get_line_layout(title_label, self.title_value, 2, 2, 6))
+        vertical.addLayout(get_line_layout(title_label, self.title_value, 1, 1, 8))
 
         name_label = QLabel("Name:")
         self.name_value = QLineEdit(get_attr(self.person, "name"))
-        vertical.addLayout(get_line_layout(name_label, self.name_value, 2, 5, 3))
+        vertical.addLayout(get_line_layout(name_label, self.name_value, 1, 7, 2))
 
         role_label = QLabel("Role:")
         self.role_value = QLineEdit(get_attr(self.person, "role"))
-        vertical.addLayout(get_line_layout(role_label, self.role_value, 2, 5, 3))
+        vertical.addLayout(get_line_layout(role_label, self.role_value, 1, 7, 2))
 
         email_label = QLabel("Email:")
         self.email_value = QLineEdit(get_attr(self.person, "email"))
-        vertical.addLayout(get_line_layout(email_label, self.email_value, 2, 5, 3))
+        vertical.addLayout(get_line_layout(email_label, self.email_value, 1, 7, 2))
 
         description_label = QLabel("Description:")
         vertical.addWidget(description_label)
         self.description_value = QTextEdit(get_attr(self.person, "description"))
-        # self.description_value.setMaximumWidth(int(MAIN_WINDOW_WIDTH / 2))
-        self.description_value.setMaximumHeight(80)
+        self.description_value.setMaximumHeight(100)
         vertical.addWidget(self.description_value)
 
         vertical.addLayout(create_save_cancel_layout(self._cancel, self._save, 2, 2, 6))
@@ -61,7 +60,7 @@ class PersonWindow(QDialog):
         name_value = self.name_value.text()
         role_value = self.role_value.text()
         email_value = self.email_value.text()
-        description_value = self.description_value.toPlainText()
+        description_value = self.description_value.toHtml()
         if not self.person:
             self.person = Person(title=title_value, name=name_value)
             if self.interview:

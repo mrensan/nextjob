@@ -3,6 +3,7 @@ from typing import List, Tuple
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTableView, QWidget
 
+from backend.htmlextractor import get_html_text
 from backend.models import Person
 from gui.basetreemodel import BaseTreeModel
 from gui.guiutils import config_view_as_line_selectable
@@ -31,7 +32,7 @@ class PersonsTableModel(BaseTreeModel):
         child.set_data(1, person.name)
         child.set_data(2, person.role)
         child.set_data(3, person.email)
-        child.set_data(4, person.description)
+        child.set_data(4, get_html_text(person.description))
         child.set_data(5, person.uuid)
 
 

@@ -8,10 +8,11 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox
 from backend.data_service import DataService
 from backend.models import Company, EmploymentType, WorkLocation, Interview, Role
 from gui.basetreemodel import BaseTreeModel
+from gui.desctextedit import DescriptionTextEdit
 from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr
 from gui.treeitem import TreeItem
 
-MAIN_WINDOW_WIDTH = 800
+MAIN_WINDOW_WIDTH = 900
 
 VISIBLE_COLUMNS_COUNT = 5
 
@@ -46,7 +47,7 @@ class RoleWindow(QDialog):
         self.components = RoleWindowComponents()
         title_label = QLabel("Title:")
         self.components.title_value = QLineEdit(get_attr(self.role, "title"))
-        vertical.addLayout(get_line_layout(title_label, self.components.title_value, 2, 3, 5))
+        vertical.addLayout(get_line_layout(title_label, self.components.title_value, 2, 7, 1))
 
         applied_date_label = QLabel("Applied Date:")
         self.components.applied_date_value = QLineEdit(str(get_attr(self.role, "applied_date")))
@@ -54,8 +55,8 @@ class RoleWindow(QDialog):
             applied_date_label,
             self.components.applied_date_value,
             2,
-            3,
-            5
+            2,
+            6
         ))
 
         employment_type_label = QLabel("Employment Type:")
@@ -67,8 +68,8 @@ class RoleWindow(QDialog):
             employment_type_label,
             self.components.employment_type_value,
             2,
-            3,
-            5
+            2,
+            6
         ))
 
         work_location_label = QLabel("Work Location:")
@@ -80,15 +81,13 @@ class RoleWindow(QDialog):
             work_location_label,
             self.components.work_location_value,
             2,
-            3,
-            5
+            2,
+            6
         ))
 
         description_label = QLabel("Description:")
         vertical.addWidget(description_label)
-        self.components.description_value = QTextEdit(get_attr(self.role, "description"))
-        self.components.description_value.setMaximumWidth(int(MAIN_WINDOW_WIDTH / 2))
-        self.components.description_value.setMaximumHeight(80)
+        self.components.description_value = DescriptionTextEdit(get_attr(self.role, "description"))
         vertical.addWidget(self.components.description_value)
 
         interviews_label = QLabel("Interviews:")
@@ -149,7 +148,7 @@ class RoleWindow(QDialog):
             self.role.applied_date = applied_date_value
             self.role.employment_type = employment_type_value
             self.role.work_location = work_location_value
-        self.role.description = self.components.description_value.toPlainText()
+        self.role.description = self.components.description_value.toHtml()
 
         data_service.update_company(self.company)
         self.accept()

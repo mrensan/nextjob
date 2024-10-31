@@ -13,7 +13,7 @@ from gui.personwindow import PersonWindow
 
 import gui.iconsrc # pylint: disable=unused-import
 
-MAIN_WINDOW_WIDTH = 800
+MAIN_WINDOW_WIDTH = 900
 
 VISIBLE_COLUMNS_COUNT = 5
 
@@ -44,7 +44,7 @@ class InterviewWindow(QDialog):
 
         title_label = QLabel("Title:")
         self.title_value = QLineEdit(get_attr(self.interview, "title"))
-        vertical.addLayout(get_line_layout(title_label, self.title_value))
+        vertical.addLayout(get_line_layout(title_label, self.title_value, 1, 4, 5))
 
         type_label = QLabel("Type:")
         self.type_value = QComboBox()
