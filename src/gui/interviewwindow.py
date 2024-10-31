@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QLineEdit, QComboBox
 
 from backend.data_service import DataService
 from backend.models import Company, InterviewType, Interview, Role
+from gui.desctextedit import DescriptionTextEdit
 from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, verify_delete_row, DELETE_ICON, \
     EDIT_ICON, ADD_ICON
 from gui.personstablemodel import create_person_table_view, set_person_table_model
@@ -57,12 +58,18 @@ class InterviewWindow(QDialog):
         self.date_value = QLineEdit(str(get_attr(self.interview, "date")))
         vertical.addLayout(get_line_layout(date_label, self.date_value))
 
+        description_label = QLabel("Description:")
+        vertical.addWidget(description_label)
+        self.description_value = DescriptionTextEdit(get_attr(self.interview, "description"))
+        vertical.addWidget(self.description_value)
+
         interviewers_label = QLabel("Interviewers:")
         vertical.addWidget(interviewers_label)
 
         self.interviewers_table, self.interviewers_model = create_person_table_view(
             get_attr(self.interview, "interviewers", []),
-            self
+            self,
+            MAIN_WINDOW_WIDTH
         )
         self.interviewers_table.customContextMenuRequested.connect(self._open_context_menu)
         vertical.addWidget(self.interviewers_table)
@@ -142,5 +149,6 @@ class InterviewWindow(QDialog):
             self.interview.type = type_value
             self.interview.date = date_value
 
+        self.interview.description = self.description_value.toHtml()
         self.data_service.update_company(self.company)
         self.accept()

@@ -53,8 +53,8 @@ def set_person_table_model(persons: List[Person], persons_table: QTableView, par
     persons_table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     persons_table.setColumnWidth(0, int(width * .5 / 10))
     persons_table.setColumnWidth(1, int(width * 1.75 / 10))
-    persons_table.setColumnWidth(2, int(width * 2 / 10))
-    persons_table.setColumnWidth(3, int(width * 2.2 / 10))
-    persons_table.setColumnWidth(4, int(width * 2.8 / 10))
+    persons_table.setColumnWidth(2, int(width * 2.5 / 10))
+    persons_table.setColumnWidth(3, int(width * 2 / 10))
+    persons_table.setColumnWidth(4, int(width * 2.5 / 10))
 
     return interviewers_model
