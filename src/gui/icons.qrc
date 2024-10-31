@@ -1,10 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/newdirectory-32.png</file>
-        <file>images/desktop-32.png</file>
-        <file>images/critical-32.png</file>
-        <file>images/filecontents-32.png</file>
-        <file>images/cleartext-32.png</file>
+        <file>images/add.png</file>
+        <file>images/delete.png</file>
+        <file>images/edit.png</file>
+        <file>images/md_import.png</file>
+        <file>images/md_add.png</file>
         <file>images/nextjob.png</file>
+        <file>images/reset.png</file>
+        <file>images/search.png</file>
     </qresource>
 </RCC>

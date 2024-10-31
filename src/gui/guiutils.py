@@ -1,10 +1,12 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox
 
-ADD_ICON = ":/images/newdirectory-32.png"
-EDIT_ICON = ":/images/desktop-32.png"
-DELETE_ICON = ":/images/critical-32.png"
-SEARCH_ICON = ":/images/filecontents-32.png"
-RESET_ICON = ":/images/cleartext-32.png"
+ADD_ICON = ":/images/add.png"
+EDIT_ICON = ":/images/edit.png"
+DELETE_ICON = ":/images/delete.png"
+SEARCH_ICON = ":/images/search.png"
+RESET_ICON = ":/images/reset.png"
+MD_IMPORT = ":/images/md_import.png"
+MD_ADD = ":/images/md_add.png"
 
 
 def get_line_layout(

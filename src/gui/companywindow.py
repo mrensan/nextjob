@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QTableView, QMenu
 
 from backend.data_service import DataService
+from backend.htmlextractor import get_html_text
 from backend.models import Company, Role
 from gui.basetreemodel import BaseTreeModel
 from gui.guiutils import get_line_layout, create_save_cancel_layout, config_view_as_line_selectable, get_attr, \
@@ -13,7 +14,7 @@ from gui.personstablemodel import create_person_table_view, set_person_table_mod
 from gui.personwindow import PersonWindow
 from gui.treeitem import TreeItem
 
-MAIN_WINDOW_WIDTH = 800
+MAIN_WINDOW_WIDTH = 900
 
 VISIBLE_COLUMNS_COUNT = 5
 
@@ -33,11 +34,11 @@ class CompanyWindow(QDialog):
 
         name_label = QLabel("Name:")
         self.name_value = QLineEdit(get_attr(self.company, "name"))
-        vertical.addLayout(get_line_layout(name_label, self.name_value, 1, 3, 6))
+        vertical.addLayout(get_line_layout(name_label, self.name_value, 1, 4, 5))
 
         website_label = QLabel("Website:")
         self.website_value = QLineEdit(get_attr(self.company, "website"))
-        vertical.addLayout(get_line_layout(website_label, self.website_value, 1, 3, 6))
+        vertical.addLayout(get_line_layout(website_label, self.website_value, 1, 4, 5))
 
         recruiters_label = QLabel("Recruiters:")
         vertical.addWidget(recruiters_label)
@@ -133,5 +134,5 @@ class RolesTableModel(BaseTreeModel):
         child.set_data(1, f"{role.applied_date}")
         child.set_data(2, role.employment_type.value)
         child.set_data(3, role.work_location.value)
-        child.set_data(4, role.description)
+        child.set_data(4, get_html_text(role.description))
         child.set_data(5, role.uuid)
