@@ -18,6 +18,7 @@ class InterviewType(Enum):
     RECRUITER = 'Recruiter'
     TECH_CODE = 'Code technical'
     TECH_DESIGN = 'Design technical'
+    TECH_GENERAL = 'General technical'
     REC_MANAGER = 'Recruiter manager'
     TEAM = 'Team'
 

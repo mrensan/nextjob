@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from PySide6.QtCore import QModelIndex, Qt
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction, QFont, QColor
 from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QDockWidget, QLineEdit
 
 from backend.data_service import DataService
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.view)
         self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self._get_dock_widget())
 
-        self.headers = ["Title", "Details", "Recruiter(s)/Interviewer(s)"]
+        self.headers = ["Title", "Details", "Recruiter(s), Interviewer(s)"]
         self.data_service = DataService()
         self._set_tree_view_model()
 
@@ -183,11 +183,12 @@ class MainWindow(QMainWindow):
     def _set_tree_view_model(self, data_model: List[Company] = None):
         if data_model is None:
             data_model: List[Company] = self.data_service.get_companies()
-        self.tree_model = CompaniesTreeModel(self.headers, data_model, self)
+        self.tree_model = CompaniesTreeModel(self.headers, data_model, self,
+                                             self.search_value.text() if data_model else "")
         self.view.setModel(self.tree_model)
-        self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH / 3))
-        self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH / 3))
-        self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH / 3))
+        self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * .37))
+        self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * .25))
+        self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH * .37))
 
     def _get_dock_widget(self) -> QDockWidget:
         dock = QDockWidget(self)
@@ -224,9 +225,22 @@ class MainWindow(QMainWindow):
 class CompaniesTreeModel(BaseTreeModel):
     """Tree model for companies"""
 
-    def __init__(self, headers: list, data: List[Company], parent=None):
+    def __init__(self, headers: list, data: List[Company], parent=None, search_value: str = ""):
         super().__init__(headers, parent=parent)
         self.setup_model_data(data, self.root_item)
+        self.search_value = search_value
+
+    def data(self, index: QModelIndex, role: int = None):
+        """Customization of data formatting."""
+        if index.isValid():
+            if role == Qt.ItemDataRole.FontRole and index.column() == 0 and index.parent().column() == -1:
+                font = QFont()
+                font.setWeight(QFont.Weight.Bold)
+                return font
+            if (role == Qt.ItemDataRole.BackgroundRole and
+                    self.search_value and self.search_value.lower() in index.data().lower()):
+                return QColor('#FAF691')
+        return super().data(index, role)
 
     def setup_model_data(self, companies: List[Company], parent: TreeItem):
         """Sets up the model data."""
@@ -237,7 +251,7 @@ class CompaniesTreeModel(BaseTreeModel):
         parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 2)
         child = parent.last_child()
         child.set_data(0, company.name)
-        child.set_data(1, "" if company.website is None else company.website)
+        child.set_data(1, "")
         child.set_data(2, ", ".join([p.name for p in company.recruiters]))
         child.set_data(3, company.uuid)
         child.set_data(4, RowType.COMPANY)
@@ -249,8 +263,8 @@ class CompaniesTreeModel(BaseTreeModel):
         parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 2)
         child = parent.last_child()
         child.set_data(0, role.title)
-        child.set_data(1, f"{role.applied_date} (applied date)")
-        child.set_data(2, f"{role.employment_type.value}/{role.work_location.value}")
+        child.set_data(1, f"{role.applied_date}")
+        child.set_data(2, f"{role.employment_type.value}, {role.work_location.value}")
         child.set_data(3, role.uuid)
         child.set_data(4, RowType.ROLE)
 
@@ -262,7 +276,7 @@ class CompaniesTreeModel(BaseTreeModel):
         parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 2)
         child = parent.last_child()
         child.set_data(0, f"({interview.sequence}) {interview.title}")
-        child.set_data(1, f"{interview.type.value} at {interview.date}")
-        child.set_data(2, ", ".join([p.name for p in interview.interviewers]))
+        child.set_data(1, f"{interview.date}, {interview.type.value}")
+        child.set_data(2, ", ".join([f"{p.name} ({p.role})" if p.role else p.name for p in interview.interviewers]))
         child.set_data(3, interview.uuid)
         child.set_data(4, RowType.INTERVIEW)
