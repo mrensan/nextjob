@@ -1,14 +1,16 @@
+import logging
 from datetime import date
 
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QLineEdit, QComboBox, QMenu
+from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.models import Company, InterviewType, Interview, Role
 from gui.desctextedit import DescriptionTextEdit
 from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, verify_delete_row, DELETE_ICON, \
-    EDIT_ICON, ADD_ICON
+    EDIT_ICON, ADD_ICON, translate_validation_error, translate_date_format_error, show_error_dialog
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 
@@ -24,6 +26,7 @@ class InterviewWindow(QDialog):
 
     def __init__(self, item_data: list, company: Company):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.setWindowTitle("Interview Details")
         self.resize(MAIN_WINDOW_WIDTH, 600)
 
@@ -43,7 +46,7 @@ class InterviewWindow(QDialog):
         self.seq_value.setDisabled(True)
         vertical.addLayout(get_line_layout(seq_label, self.seq_value))
 
-        title_label = QLabel("Title:")
+        title_label = QLabel("Title: (*)")
         self.title_value = QLineEdit(get_attr(self.interview, "title"))
         vertical.addLayout(get_line_layout(title_label, self.title_value, 1, 4, 5))
 
@@ -54,7 +57,7 @@ class InterviewWindow(QDialog):
             self.type_value.setCurrentText(self.interview.type.value)
         vertical.addLayout(get_line_layout(type_label, self.type_value))
 
-        date_label = QLabel("Date:")
+        date_label = QLabel("Date: (*)")
         self.date_value = QLineEdit(str(get_attr(self.interview, "date")))
         vertical.addLayout(get_line_layout(date_label, self.date_value))
 
@@ -95,8 +98,8 @@ class InterviewWindow(QDialog):
         context_menu.exec(self.interviewers_table.viewport().mapToGlobal(point))
 
     def _save_interview_and_open_interviewer_window(self, index: QModelIndex):
-        self._save_interview()
-        self._open_interviewer_window(index)
+        if self._save_interview():
+            self._open_interviewer_window(index)
 
     def _open_interviewer_window(self, index: QModelIndex):
         item_data = self.interviewers_model.get_item(index).item_data
@@ -140,26 +143,36 @@ class InterviewWindow(QDialog):
         self.accept()
 
     def _save(self):
-        self._save_interview()
-        self.accept()
+        if self._save_interview():
+            self.accept()
 
-    def _save_interview(self):
-        sequence_value = int(self.seq_value.text())
-        title_value = self.title_value.text()
-        type_value = list(InterviewType)[self.type_value.currentIndex()]
-        date_value = date.fromisoformat(self.date_value.text())
-        if not self.interview:
-            self.interview = Interview(
-                sequence=sequence_value,
-                title=title_value,
-                type=type_value,
-                date=date_value
-            )
-            self.role.interviews.append(self.interview)
-        else:
-            self.interview.title = title_value
-            self.interview.type = type_value
-            self.interview.date = date_value
+    def _save_interview(self) -> bool:
+        try:
+            sequence_value = int(self.seq_value.text().strip())
+            title_value = self.title_value.text().strip()
+            type_value = list(InterviewType)[self.type_value.currentIndex()]
+            date_value = date.fromisoformat(self.date_value.text().strip())
+            if not self.interview:
+                self.interview = Interview(
+                    sequence=sequence_value,
+                    title=title_value,
+                    type=type_value,
+                    date=date_value
+                )
+                self.role.interviews.append(self.interview)
+            else:
+                self.interview.title = title_value
+                self.interview.type = type_value
+                self.interview.date = date_value
 
-        self.interview.description = self.description_value.toHtml()
-        self.data_service.update_company(self.company)
+            self.interview.description = self.description_value.toHtml()
+            self.data_service.update_company(self.company)
+            return True
+        except ValidationError as e:
+            self.logger.error("Saving interview validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_validation_error(e))
+        except ValueError as e:
+            self.logger.error("Saving interview validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_date_format_error(e))
+
+        return False

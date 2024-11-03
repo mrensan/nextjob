@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox, QErrorMessage
+from pydantic import ValidationError
 
 ADD_ICON = ":/images/add.png"
 EDIT_ICON = ":/images/edit.png"
@@ -51,3 +52,26 @@ def verify_delete_row(message: str, parent: QWidget) -> bool:
     """Asks the user if they want to delete a row."""
     buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
     return QMessageBox.critical(parent, "Delete", message, buttons) == QMessageBox.StandardButton.Yes
+
+
+def translate_validation_error(error: ValidationError) -> str:
+    """Translates a validation error to a string."""
+    msg_parts = []
+    for err in error.errors():
+        msg_parts.append(f"'{err['loc'][0]}': {err['msg']}\n")
+    return ", ".join(msg_parts)
+
+
+def translate_date_format_error(error: ValueError) -> str:
+    """Translates a date format error to a string."""
+    if "Invalid isoformat string" in error.args[0]:
+        return "Invalid date format. Use YYYY-MM-DD"
+    return error.args[0]
+
+
+def show_error_dialog(parent: QWidget, title: str, message: str):
+    """Shows an error dialog."""
+    error_dialog = QErrorMessage(parent)
+    error_dialog.setWindowTitle(title)
+    error_dialog.showMessage(message)
+    error_dialog.exec()

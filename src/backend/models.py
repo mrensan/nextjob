@@ -40,7 +40,7 @@ class EmploymentType(Enum):
 class Person(BaseModel):
     """Model representing a person with first name, last name, and other properties."""
     uuid: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
+    name: str = Field(..., min_length=1)
     role: Optional[str] = None
     email: Optional[str] = None
     description: Optional[str] = None
@@ -51,7 +51,7 @@ class Interview(BaseModel):
     """Model representing an interview."""
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     sequence: int
-    title: str
+    title: str = Field(..., min_length=1)
     type: InterviewType
     date: date
     description: Optional[str] = None
@@ -61,7 +61,7 @@ class Interview(BaseModel):
 class Role(BaseModel):
     """Model representing an applied role."""
     uuid: str = Field(default_factory=lambda: str(uuid4()))
-    title: str
+    title: str = Field(..., min_length=1)
     applied_date: date
     employment_type: EmploymentType = Field(default=EmploymentType.FULL_TIME)
     work_location: WorkLocation = Field(default=WorkLocation.HYBRID)
@@ -72,7 +72,7 @@ class Role(BaseModel):
 class Company(BaseModel):
     """Model representing a company."""
     uuid: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
+    name: str = Field(..., min_length=1)
     website: Optional[str] = None
     recruiters: List[Person] = []
     roles: List[Role] = []

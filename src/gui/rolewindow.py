@@ -1,15 +1,18 @@
+import logging
 from dataclasses import dataclass
 from datetime import date
 from typing import List
 
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, \
     QTextEdit, QTableView, QAbstractItemView
+from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.models import Company, EmploymentType, WorkLocation, Interview, Role
 from gui.basetreemodel import BaseTreeModel
 from gui.desctextedit import DescriptionTextEdit
-from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr
+from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, translate_validation_error, \
+    translate_date_format_error, show_error_dialog
 from gui.treeitem import TreeItem
 
 MAIN_WINDOW_WIDTH = 900
@@ -37,6 +40,7 @@ class RoleWindow(QDialog):
 
     def __init__(self, item_data: list, company: Company):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.setWindowTitle("Role Details")
         self.resize(MAIN_WINDOW_WIDTH, 600)
 
@@ -45,11 +49,11 @@ class RoleWindow(QDialog):
 
         vertical = QVBoxLayout()
         self.components = RoleWindowComponents()
-        title_label = QLabel("Title:")
+        title_label = QLabel("Title: (*)")
         self.components.title_value = QLineEdit(get_attr(self.role, "title"))
         vertical.addLayout(get_line_layout(title_label, self.components.title_value, 2, 7, 1))
 
-        applied_date_label = QLabel("Applied Date:")
+        applied_date_label = QLabel("Applied Date: (*)")
         self.components.applied_date_value = QLineEdit(str(get_attr(self.role, "applied_date")))
         vertical.addLayout(get_line_layout(
             applied_date_label,
@@ -132,26 +136,33 @@ class RoleWindow(QDialog):
         self.reject()
 
     def _save(self):
-        data_service = DataService()
-        title_value = self.components.title_value.text()
-        applied_date_value = date.fromisoformat(self.components.applied_date_value.text())
-        employment_type_value = list(EmploymentType)[self.components.employment_type_value.currentIndex()]
-        work_location_value = list(WorkLocation)[self.components.work_location_value.currentIndex()]
-        if not self.role:
-            self.role = Role(title=title_value,
-                             applied_date=applied_date_value,
-                             employment_type=employment_type_value,
-                             work_location=work_location_value)
-            self.company.roles.append(self.role)
-        else:
-            self.role.title = title_value
-            self.role.applied_date = applied_date_value
-            self.role.employment_type = employment_type_value
-            self.role.work_location = work_location_value
-        self.role.description = self.components.description_value.toHtml()
+        try:
+            data_service = DataService()
+            title_value = self.components.title_value.text().strip()
+            applied_date_value = date.fromisoformat(self.components.applied_date_value.text().strip())
+            employment_type_value = list(EmploymentType)[self.components.employment_type_value.currentIndex()]
+            work_location_value = list(WorkLocation)[self.components.work_location_value.currentIndex()]
+            if not self.role:
+                self.role = Role(title=title_value,
+                                 applied_date=applied_date_value,
+                                 employment_type=employment_type_value,
+                                 work_location=work_location_value)
+                self.company.roles.append(self.role)
+            else:
+                self.role.title = title_value
+                self.role.applied_date = applied_date_value
+                self.role.employment_type = employment_type_value
+                self.role.work_location = work_location_value
+            self.role.description = self.components.description_value.toHtml()
 
-        data_service.update_company(self.company)
-        self.accept()
+            data_service.update_company(self.company)
+            self.accept()
+        except ValidationError as e:
+            self.logger.error("Saving role validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_validation_error(e))
+        except ValueError as e:
+            self.logger.error("Saving role validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_date_format_error(e))
 
 
 class InterviewsTableModel(BaseTreeModel):

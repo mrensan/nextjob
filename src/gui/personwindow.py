@@ -1,10 +1,13 @@
+import logging
 from typing import Optional
 
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QLineEdit, QTextEdit
+from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.models import Company, TITLE, Person, Interview
-from gui.guiutils import get_line_layout, get_attr, create_save_cancel_layout
+from gui.guiutils import get_line_layout, get_attr, create_save_cancel_layout, translate_validation_error, \
+    show_error_dialog
 
 MAIN_WINDOW_WIDTH = 700
 
@@ -14,6 +17,7 @@ class PersonWindow(QDialog):
 
     def __init__(self, item_data: list, company: Company, interview: Interview = None):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.setWindowTitle(f"{'Recruiter' if interview is None else 'Interviewer'} Details")
         self.resize(MAIN_WINDOW_WIDTH, 250)
 
@@ -29,7 +33,7 @@ class PersonWindow(QDialog):
             self.title_value.setCurrentText(self.person.title.value)
         vertical.addLayout(get_line_layout(title_label, self.title_value, 1, 1, 8))
 
-        name_label = QLabel("Name:")
+        name_label = QLabel("Name: (*)")
         self.name_value = QLineEdit(get_attr(self.person, "name"))
         vertical.addLayout(get_line_layout(name_label, self.name_value, 1, 7, 2))
 
@@ -55,27 +59,32 @@ class PersonWindow(QDialog):
         self.reject()
 
     def _save(self):
-        data_service = DataService()
-        title_value = list(TITLE)[self.title_value.currentIndex()]
-        name_value = self.name_value.text()
-        role_value = self.role_value.text()
-        email_value = self.email_value.text()
-        description_value = self.description_value.toHtml()
-        if not self.person:
-            self.person = Person(title=title_value, name=name_value)
-            if self.interview:
-                self.interview.interviewers.append(self.person)
+        try:
+            data_service = DataService()
+            title_value = list(TITLE)[self.title_value.currentIndex()]
+            name_value = self.name_value.text().strip()
+            role_value = self.role_value.text().strip()
+            email_value = self.email_value.text().strip()
+            description_value = self.description_value.toHtml()
+            if not self.person:
+                self.person = Person(title=title_value, name=name_value)
+                if self.interview:
+                    self.interview.interviewers.append(self.person)
+                else:
+                    self.company.recruiters.append(self.person)
             else:
-                self.company.recruiters.append(self.person)
-        else:
-            self.person.title = title_value
-            self.person.name = name_value
-        self.person.role = role_value
-        self.person.email = email_value
-        self.person.description = description_value
+                self.person.title = title_value
+                self.person.name = name_value
+            self.person.role = role_value
+            self.person.email = email_value
+            self.person.description = description_value
 
-        data_service.update_company(self.company)
-        self.accept()
+            data_service.update_company(self.company)
+            self.accept()
+
+        except ValidationError as e:
+            self.logger.error("Saving company validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_validation_error(e))
 
     @staticmethod
     def _find_person(person_uuid: str, company: Company, interview: Interview) -> Optional[Person]:
