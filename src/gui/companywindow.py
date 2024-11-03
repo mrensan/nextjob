@@ -1,15 +1,17 @@
+import logging
 from typing import List
 
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QTableView, QMenu
+from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.htmlextractor import get_html_text
 from backend.models import Company, Role
 from gui.basetreemodel import BaseTreeModel
 from gui.guiutils import get_line_layout, create_save_cancel_layout, config_view_as_line_selectable, get_attr, \
-    verify_delete_row, EDIT_ICON, DELETE_ICON, ADD_ICON
+    verify_delete_row, EDIT_ICON, DELETE_ICON, ADD_ICON, translate_validation_error, show_error_dialog
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 from gui.treeitem import TreeItem
@@ -24,6 +26,7 @@ class CompanyWindow(QDialog):
 
     def __init__(self, company: Company = None):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.setWindowTitle("Company Details")
         self.resize(MAIN_WINDOW_WIDTH, 600)
 
@@ -32,7 +35,7 @@ class CompanyWindow(QDialog):
 
         vertical = QVBoxLayout()
 
-        name_label = QLabel("Name:")
+        name_label = QLabel("Name: (*)")
         self.name_value = QLineEdit(get_attr(self.company, "name"))
         vertical.addLayout(get_line_layout(name_label, self.name_value, 1, 4, 5))
 
@@ -84,8 +87,8 @@ class CompanyWindow(QDialog):
         context_menu.exec(self.recruiters_table.viewport().mapToGlobal(point))
 
     def _save_company_and_open_recruiter_window(self, index: QModelIndex):
-        self._save_company()
-        self._open_recruiter_window(index)
+        if self._save_company():
+            self._open_recruiter_window(index)
 
     def _open_recruiter_window(self, index: QModelIndex):
         item_data = self.recruiters_model.get_item(index).item_data
@@ -107,22 +110,29 @@ class CompanyWindow(QDialog):
         self.accept()
 
     def _save(self):
-        self._save_company()
-        self.accept()
+        if self._save_company():
+            self.accept()
 
-    def _save_company(self):
-        is_new_company = False
-        if not self.company:
-            self.company = Company(name=self.name_value.text())
-            is_new_company = True
-        else:
-            self.company.name = self.name_value.text()
-        self.company.website = self.website_value.text()
+    def _save_company(self) -> bool:
+        try:
+            is_new_company = False
+            if not self.company:
+                self.company = Company(name=self.name_value.text())
+                is_new_company = True
+            else:
+                self.company.name = self.name_value.text().strip()
+            self.company.website = self.website_value.text().strip()
 
-        if is_new_company:
-            self.data_service.insert_company(self.company)
-        else:
-            self.data_service.update_company(self.company)
+            if is_new_company:
+                self.data_service.insert_company(self.company)
+            else:
+                self.data_service.update_company(self.company)
+            return True
+        except ValidationError as e:
+            self.logger.error("Saving company validation error: %s", e)
+            show_error_dialog(self, "Validation Error", translate_validation_error(e))
+            return False
+
 
 class RolesTableModel(BaseTreeModel):
     """Table model for roles."""

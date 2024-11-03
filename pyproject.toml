@@ -1,6 +1,6 @@
 [project]
 name = "nextjob"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
     { name = "Shahram Ensan", email = "shahram@ensan.net" },
 ]
