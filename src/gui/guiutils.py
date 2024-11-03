@@ -1,4 +1,6 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox, QErrorMessage
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QAbstractItemView, QPushButton, QMessageBox, \
+    QApplication, QErrorMessage
 from pydantic import ValidationError
 
 ADD_ICON = ":/images/add.png"
@@ -75,3 +77,15 @@ def show_error_dialog(parent: QWidget, title: str, message: str):
     error_dialog.setWindowTitle(title)
     error_dialog.showMessage(message)
     error_dialog.exec()
+
+
+def is_dark_theme():
+    """Checks if the current theme is dark."""
+    # Get the application's palette
+    palette = QApplication.palette()
+    window_color = palette.color(QPalette.ColorRole.Window)
+
+    # Calculate the brightness of the background color
+    # Brightness formula (weighted sum) is standard for luminance calculation
+    brightness = 0.299 * window_color.red() + 0.587 * window_color.green() + 0.114 * window_color.blue()
+    return brightness < 128  # A threshold value; < 128 indicates a dark color

@@ -10,7 +10,7 @@ from backend.data_service import DataService
 from backend.models import Company, Role, Interview
 from gui.basetreemodel import BaseTreeModel
 from gui.companywindow import CompanyWindow, EDIT_ICON, DELETE_ICON, ADD_ICON
-from gui.guiutils import verify_delete_row, SEARCH_ICON, RESET_ICON
+from gui.guiutils import verify_delete_row, SEARCH_ICON, RESET_ICON, is_dark_theme
 from gui.interviewwindow import InterviewWindow
 from gui.rolewindow import RoleWindow
 from gui.treeitem import TreeItem
@@ -271,7 +271,7 @@ class CompaniesTreeModel(BaseTreeModel):
                 return font
             if (role == Qt.ItemDataRole.BackgroundRole and
                     self.search_value and self.search_value.lower() in index.data().lower()):
-                return QColor('#FAF691')
+                return QColor('#9B6E59') if is_dark_theme() else QColor('#FAF691')
         return super().data(index, role)
 
     def setup_model_data(self, companies: List[Company], parent: TreeItem):
