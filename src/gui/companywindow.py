@@ -75,9 +75,17 @@ class CompanyWindow(QDialog):
             context_menu.addAction(QIcon(DELETE_ICON), "Delete Recruiter",
                                    lambda: self._delete_recruiter_row(index))
         else:
-            context_menu.addAction(QIcon(ADD_ICON), "Add Recruiter", lambda: self._open_recruiter_window(index))
+            if self.company:
+                context_menu.addAction(QIcon(ADD_ICON), "Add Recruiter", lambda: self._open_recruiter_window(index))
+            else:
+                context_menu.addAction(QIcon(ADD_ICON), "Save Company and Add Recruiter",
+                                       lambda: self._save_company_and_open_recruiter_window(index))
 
         context_menu.exec(self.recruiters_table.viewport().mapToGlobal(point))
+
+    def _save_company_and_open_recruiter_window(self, index: QModelIndex):
+        self._save_company()
+        self._open_recruiter_window(index)
 
     def _open_recruiter_window(self, index: QModelIndex):
         item_data = self.recruiters_model.get_item(index).item_data
@@ -96,9 +104,13 @@ class CompanyWindow(QDialog):
         set_person_table_model(self.company.recruiters, self.recruiters_table, self)
 
     def _cancel(self):
-        self.reject()
+        self.accept()
 
     def _save(self):
+        self._save_company()
+        self.accept()
+
+    def _save_company(self):
         is_new_company = False
         if not self.company:
             self.company = Company(name=self.name_value.text())
@@ -111,8 +123,6 @@ class CompanyWindow(QDialog):
             self.data_service.insert_company(self.company)
         else:
             self.data_service.update_company(self.company)
-        self.accept()
-
 
 class RolesTableModel(BaseTreeModel):
     """Table model for roles."""

@@ -12,7 +12,7 @@ from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, v
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 
-import gui.iconsrc # pylint: disable=unused-import
+import gui.iconsrc  # pylint: disable=unused-import
 
 MAIN_WINDOW_WIDTH = 900
 
@@ -82,13 +82,21 @@ class InterviewWindow(QDialog):
         index = self.interviewers_table.indexAt(point)
         context_menu = QMenu()
         if index.isValid():
-            context_menu.addAction(QIcon(EDIT_ICON), "Edit Recruiter", lambda: self._open_interviewer_window(index))
-            context_menu.addAction(QIcon(DELETE_ICON), "Delete Recruiter",
+            context_menu.addAction(QIcon(EDIT_ICON), "Edit Interviewer", lambda: self._open_interviewer_window(index))
+            context_menu.addAction(QIcon(DELETE_ICON), "Delete Interviewer",
                                    lambda: self._delete_interviewer_row(index))
         else:
-            context_menu.addAction(QIcon(ADD_ICON), "Add Recruiter", lambda: self._open_interviewer_window(index))
+            if self.interview:
+                context_menu.addAction(QIcon(ADD_ICON), "Add Interviewer", lambda: self._open_interviewer_window(index))
+            else:
+                context_menu.addAction(QIcon(ADD_ICON), "Save Interview and Add Interviewer",
+                                       lambda: self._save_interview_and_open_interviewer_window(index))
 
         context_menu.exec(self.interviewers_table.viewport().mapToGlobal(point))
+
+    def _save_interview_and_open_interviewer_window(self, index: QModelIndex):
+        self._save_interview()
+        self._open_interviewer_window(index)
 
     def _open_interviewer_window(self, index: QModelIndex):
         item_data = self.interviewers_model.get_item(index).item_data
@@ -129,9 +137,13 @@ class InterviewWindow(QDialog):
         return role.interviews[-1].sequence + 1
 
     def _cancel(self):
-        self.reject()
+        self.accept()
 
     def _save(self):
+        self._save_interview()
+        self.accept()
+
+    def _save_interview(self):
         sequence_value = int(self.seq_value.text())
         title_value = self.title_value.text()
         type_value = list(InterviewType)[self.type_value.currentIndex()]
@@ -151,4 +163,3 @@ class InterviewWindow(QDialog):
 
         self.interview.description = self.description_value.toHtml()
         self.data_service.update_company(self.company)
-        self.accept()
