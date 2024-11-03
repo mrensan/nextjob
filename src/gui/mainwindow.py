@@ -282,8 +282,11 @@ class CompaniesTreeModel(BaseTreeModel):
     def _insert_company(self, company: Company, parent: TreeItem):
         parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 2)
         child = parent.last_child()
+        interview_count = 0
+        for role in company.roles:
+            interview_count += len(role.interviews)
         child.set_data(0, company.name)
-        child.set_data(1, "")
+        child.set_data(1, f"Roles: {len(company.roles)}, Interview: {interview_count}")
         child.set_data(2, ", ".join([p.name for p in company.recruiters]))
         child.set_data(3, company.uuid)
         child.set_data(4, RowType.COMPANY)
