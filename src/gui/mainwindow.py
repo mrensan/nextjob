@@ -1,15 +1,16 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QIcon, QAction, QFont, QColor
-from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QDockWidget, QLineEdit
+from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QDockWidget, QLineEdit, \
+    QStatusBar, QLabel, QSizePolicy, QMenuBar, QMessageBox
 
 from backend.data_service import DataService
 from backend.models import Company, Role, Interview
 from gui.basetreemodel import BaseTreeModel
 from gui.companywindow import CompanyWindow, EDIT_ICON, DELETE_ICON, ADD_ICON
-from gui.guiutils import verify_delete_row, SEARCH_ICON, RESET_ICON
+from gui.guiutils import verify_delete_row, SEARCH_ICON, RESET_ICON, is_dark_theme
 from gui.interviewwindow import InterviewWindow
 from gui.rolewindow import RoleWindow
 from gui.treeitem import TreeItem
@@ -48,6 +49,8 @@ class MainWindow(QMainWindow):
         self.view.customContextMenuRequested.connect(self._open_context_menu)
         self.setCentralWidget(self.view)
         self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self._get_dock_widget())
+        self._config_menu(self.menuBar())
+        self.setStatusBar(self._get_status_bar())
 
         self.headers = ["Title", "Details", "Recruiter(s), Interviewer(s)"]
         self.data_service = DataService()
@@ -152,9 +155,9 @@ class MainWindow(QMainWindow):
             new_index = self.tree_model.index(row, column)
             self.view.expandRecursively(new_index, -1)
 
-    def _open_new_window(self, index: QModelIndex):
+    def _open_new_window(self, index: Optional[QModelIndex]):
         detail_window: QDialog
-        if index.isValid():
+        if index and index.isValid():
             item_data = self.tree_model.get_item(index).item_data
             row_type = item_data[4]
             row: int
@@ -183,12 +186,26 @@ class MainWindow(QMainWindow):
     def _set_tree_view_model(self, data_model: List[Company] = None):
         if data_model is None:
             data_model: List[Company] = self.data_service.get_companies()
+            self.companies_count.setText(f"Companies: {len(data_model)}")
+            self.status_label.setText("Ready")
+        else:
+            self.status_label.setText(f"Search results: {len(data_model)} company(s)")
         self.tree_model = CompaniesTreeModel(self.headers, data_model, self,
                                              self.search_value.text() if data_model else "")
         self.view.setModel(self.tree_model)
         self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * .37))
         self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * .25))
         self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH * .37))
+
+    def _config_menu(self, menu_bar: QMenuBar):
+        companies_menu = menu_bar.addMenu("Companies")
+        companies_menu.addAction(QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(None))
+
+        help_menu = menu_bar.addMenu("Help")
+        help_menu.addAction("About", lambda: QMessageBox.about(
+            self,
+            "About",
+            "Next Job\n 0.4.0\n\nCopyright © 2024 Shahram Ensan\nMIT License"))
 
     def _get_dock_widget(self) -> QDockWidget:
         dock = QDockWidget(self)
@@ -204,6 +221,21 @@ class MainWindow(QMainWindow):
         reset_action.triggered.connect(self._reset_action_triggered)
         dock.setWidget(self.search_value)
         return dock
+
+    def _get_status_bar(self) -> QStatusBar:
+        status_bar = QStatusBar(self)
+        self.status_label = QLabel("Ready")
+        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.companies_count = QLineEdit()
+        self.companies_count.setReadOnly(True)
+        self.companies_count.setDisabled(True)
+        self.companies_count.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        self.companies_count.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        status_bar.addWidget(self.status_label, 1)
+        status_bar.addPermanentWidget(self.companies_count)
+
+        return status_bar
 
     def _search_text_changed(self, text: str):
         if len(text) > 2:
@@ -239,7 +271,7 @@ class CompaniesTreeModel(BaseTreeModel):
                 return font
             if (role == Qt.ItemDataRole.BackgroundRole and
                     self.search_value and self.search_value.lower() in index.data().lower()):
-                return QColor('#FAF691')
+                return QColor('#9B6E59') if is_dark_theme() else QColor('#FAF691')
         return super().data(index, role)
 
     def setup_model_data(self, companies: List[Company], parent: TreeItem):
@@ -250,8 +282,11 @@ class CompaniesTreeModel(BaseTreeModel):
     def _insert_company(self, company: Company, parent: TreeItem):
         parent.insert_children(parent.child_count(), 1, VISIBLE_COLUMNS_COUNT + 2)
         child = parent.last_child()
+        interview_count = 0
+        for role in company.roles:
+            interview_count += len(role.interviews)
         child.set_data(0, company.name)
-        child.set_data(1, "")
+        child.set_data(1, f"Roles: {len(company.roles)}, Interview: {interview_count}")
         child.set_data(2, ", ".join([p.name for p in company.recruiters]))
         child.set_data(3, company.uuid)
         child.set_data(4, RowType.COMPANY)
