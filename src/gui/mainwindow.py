@@ -291,7 +291,7 @@ class CompaniesTreeModel(BaseTreeModel):
         child.set_data(3, company.uuid)
         child.set_data(4, RowType.COMPANY)
 
-        for role in company.roles:
+        for role in sorted(company.roles, key=lambda r: r.applied_date, reverse=True):
             self._insert_role(role, child)
 
     def _insert_role(self, role: Role, parent: TreeItem):

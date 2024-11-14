@@ -4,7 +4,7 @@ from typing import List
 
 from tinydb import TinyDB, Query
 
-from backend.datautils import flatten_dict, get_data_file
+from backend.datautils import flatten_dict, get_data_file, sort_companies_by_applied_date
 from backend.models import Company
 
 
@@ -19,7 +19,7 @@ class DataService:
 
     def get_companies(self) -> List[Company]:
         """Get all companies."""
-        return [Company(**document) for document in self.companies_table.all()]
+        return sort_companies_by_applied_date([Company(**document) for document in self.companies_table.all()])
 
     def get_company_by_uuid(self, company_uuid) -> Company:
         """Get company by uuid."""
@@ -108,7 +108,7 @@ class DataService:
             flat_doc = flatten_dict(doc)
             if any(search_string.lower() in value.lower() for value in flat_doc.values()):
                 results.append(doc)
-        return [Company(**document) for document in results]
+        return sort_companies_by_applied_date([Company(**document) for document in results])
 
     @staticmethod
     def __company_to_json(company):
