@@ -1,5 +1,6 @@
 import logging
 import sys
+from datetime import date
 from pathlib import Path
 import platform
 
@@ -57,3 +58,14 @@ def flatten_dict(d, parent_key=''):
         else:
             items.append((new_key, str(v)))
     return dict(items)
+
+
+def sort_companies_by_applied_date(companies):
+    """Sorts companies by the most recent applied_date in descending order"""
+    def get_most_recent_applied_date(company):
+        """Gets the most recent applied_date for a company's roles"""
+        if not company.roles:
+            return date.min  # use a minimum date if there are no roles
+        return max(role.applied_date for role in company.roles)
+
+    return sorted(companies, key=get_most_recent_applied_date, reverse=True)
