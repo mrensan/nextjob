@@ -11,5 +11,7 @@
 - To install the project using pip and `pyproject.toml` file: `pip install .`
 - To install the project using pip and `pyproject.toml` file in editable mode: `pip install -e .`
 - To build the resource file for pyside6, use: `pyside6-rcc src/gui/icons.qrc -o src/gui/iconsrc.py`
-- To build the project use: `python -m build`
+- To build the project: 
+  - First install build package if not already installed: `pip install build`
+  - Then run: `python -m build`
 - To install the project using the wheel file, use: `pip install dist/nextjob-0.0.1-py3-none-any.whl`
