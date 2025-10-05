@@ -3,16 +3,30 @@ from dataclasses import dataclass
 from datetime import date
 from typing import List
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QComboBox, \
-    QTextEdit, QTableView, QAbstractItemView
+from PySide6.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QLineEdit,
+    QComboBox,
+    QTextEdit,
+    QTableView,
+    QAbstractItemView,
+)
 from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.models import Company, EmploymentType, WorkLocation, Interview, Role
 from gui.basetreemodel import BaseTreeModel
 from gui.desctextedit import DescriptionTextEdit
-from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, translate_validation_error, \
-    translate_date_format_error, show_error_dialog
+from gui.guiutils import (
+    get_line_layout,
+    create_save_cancel_layout,
+    get_attr,
+    translate_validation_error,
+    translate_date_format_error,
+    show_error_dialog,
+)
 from gui.treeitem import TreeItem
 
 MAIN_WINDOW_WIDTH = 900
@@ -51,47 +65,53 @@ class RoleWindow(QDialog):
         self.components = RoleWindowComponents()
         title_label = QLabel("Title: (*)")
         self.components.title_value = QLineEdit(get_attr(self.role, "title"))
-        vertical.addLayout(get_line_layout(title_label, self.components.title_value, 2, 7, 1))
+        vertical.addLayout(
+            get_line_layout(title_label, self.components.title_value, 2, 7, 1)
+        )
 
         applied_date_label = QLabel("Applied Date: (*)")
-        self.components.applied_date_value = QLineEdit(str(get_attr(self.role, "applied_date")))
-        vertical.addLayout(get_line_layout(
-            applied_date_label,
-            self.components.applied_date_value,
-            2,
-            2,
-            6
-        ))
+        self.components.applied_date_value = QLineEdit(
+            str(get_attr(self.role, "applied_date"))
+        )
+        vertical.addLayout(
+            get_line_layout(
+                applied_date_label, self.components.applied_date_value, 2, 2, 6
+            )
+        )
 
         employment_type_label = QLabel("Employment Type:")
         self.components.employment_type_value = QComboBox()
-        self.components.employment_type_value.addItems([et.value for et in EmploymentType])
+        self.components.employment_type_value.addItems(
+            [et.value for et in EmploymentType]
+        )
         if self.role:
-            self.components.employment_type_value.setCurrentText(self.role.employment_type.value)
-        vertical.addLayout(get_line_layout(
-            employment_type_label,
-            self.components.employment_type_value,
-            2,
-            2,
-            6
-        ))
+            self.components.employment_type_value.setCurrentText(
+                self.role.employment_type.value
+            )
+        vertical.addLayout(
+            get_line_layout(
+                employment_type_label, self.components.employment_type_value, 2, 2, 6
+            )
+        )
 
         work_location_label = QLabel("Work Location:")
         self.components.work_location_value = QComboBox()
         self.components.work_location_value.addItems([wl.value for wl in WorkLocation])
         if self.role:
-            self.components.work_location_value.setCurrentText(self.role.work_location.value)
-        vertical.addLayout(get_line_layout(
-            work_location_label,
-            self.components.work_location_value,
-            2,
-            2,
-            6
-        ))
+            self.components.work_location_value.setCurrentText(
+                self.role.work_location.value
+            )
+        vertical.addLayout(
+            get_line_layout(
+                work_location_label, self.components.work_location_value, 2, 2, 6
+            )
+        )
 
         description_label = QLabel("Description:")
         vertical.addWidget(description_label)
-        self.components.description_value = DescriptionTextEdit(get_attr(self.role, "description"))
+        self.components.description_value = DescriptionTextEdit(
+            get_attr(self.role, "description")
+        )
         vertical.addWidget(self.components.description_value)
 
         interviews_label = QLabel("Interviews:")
@@ -117,13 +137,25 @@ class RoleWindow(QDialog):
             QAbstractItemView.ScrollMode.ScrollPerPixel
         )
         headers = ["Seq", "Title", "Interview type", "Date", "Interviewers"]
-        self.interviews_model = InterviewsTableModel(headers, get_attr(self.role, "interviews", []), self)
+        self.interviews_model = InterviewsTableModel(
+            headers, get_attr(self.role, "interviews", []), self
+        )
         self.components.interviews_table.setModel(self.interviews_model)
-        self.components.interviews_table.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * .5 / 10))
-        self.components.interviews_table.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * 2.6 / 10))
-        self.components.interviews_table.setColumnWidth(2, int(MAIN_WINDOW_WIDTH * 1.5 / 10))
-        self.components.interviews_table.setColumnWidth(3, int(MAIN_WINDOW_WIDTH * 1.2 / 10))
-        self.components.interviews_table.setColumnWidth(4, int(MAIN_WINDOW_WIDTH * 3.5 / 10))
+        self.components.interviews_table.setColumnWidth(
+            0, int(MAIN_WINDOW_WIDTH * 0.5 / 10)
+        )
+        self.components.interviews_table.setColumnWidth(
+            1, int(MAIN_WINDOW_WIDTH * 2.6 / 10)
+        )
+        self.components.interviews_table.setColumnWidth(
+            2, int(MAIN_WINDOW_WIDTH * 1.5 / 10)
+        )
+        self.components.interviews_table.setColumnWidth(
+            3, int(MAIN_WINDOW_WIDTH * 1.2 / 10)
+        )
+        self.components.interviews_table.setColumnWidth(
+            4, int(MAIN_WINDOW_WIDTH * 3.5 / 10)
+        )
 
     @staticmethod
     def _find_role(role_uuid: str, company: Company):
@@ -139,14 +171,22 @@ class RoleWindow(QDialog):
         try:
             data_service = DataService()
             title_value = self.components.title_value.text().strip()
-            applied_date_value = date.fromisoformat(self.components.applied_date_value.text().strip())
-            employment_type_value = list(EmploymentType)[self.components.employment_type_value.currentIndex()]
-            work_location_value = list(WorkLocation)[self.components.work_location_value.currentIndex()]
+            applied_date_value = date.fromisoformat(
+                self.components.applied_date_value.text().strip()
+            )
+            employment_type_value = list(EmploymentType)[
+                self.components.employment_type_value.currentIndex()
+            ]
+            work_location_value = list(WorkLocation)[
+                self.components.work_location_value.currentIndex()
+            ]
             if not self.role:
-                self.role = Role(title=title_value,
-                                 applied_date=applied_date_value,
-                                 employment_type=employment_type_value,
-                                 work_location=work_location_value)
+                self.role = Role(
+                    title=title_value,
+                    applied_date=applied_date_value,
+                    employment_type=employment_type_value,
+                    work_location=work_location_value,
+                )
                 self.company.roles.append(self.role)
             else:
                 self.role.title = title_value

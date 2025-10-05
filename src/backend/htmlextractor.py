@@ -12,7 +12,7 @@ class HTMLTextExtractor(HTMLParser):
         self.text_parts.append(data)
 
     def feed(self, data):
-        position = data.find('<body')
+        position = data.find("<body")
         if position == -1:
             super().feed(data)
             return
@@ -20,7 +20,7 @@ class HTMLTextExtractor(HTMLParser):
 
     def get_text(self):
         """Returns the text from the HTML document."""
-        return ''.join(self.text_parts).replace('\n', ' ').strip()
+        return "".join(self.text_parts).replace("\n", " ").strip()
 
 
 def get_html_text(description: str) -> str:

@@ -24,10 +24,12 @@ class DescriptionTextEdit(QWidget):
         self.toolbar.setIconSize(QSize(20, 20))
         self.toolbar.setFixedHeight(24)
         self.toolbar.setContentsMargins(0, 0, 0, 0)
-        self.toolbar.setStyleSheet("""
+        self.toolbar.setStyleSheet(
+            """
             QToolBar { padding: 0px; margin: 0px; spacing: 0px; }
             QToolButton { padding: 0px; margin: 0px; }
-        """)  # Adjust toolbar and button padding
+        """
+        )  # Adjust toolbar and button padding
         md_import_action = QAction(QIcon(MD_IMPORT), "Clipboard Markdown", self)
         md_import_action.triggered.connect(self.md_import_action_triggered)
         self.toolbar.addAction(md_import_action)

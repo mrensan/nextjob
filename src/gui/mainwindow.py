@@ -3,8 +3,20 @@ from typing import List, Optional
 
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QIcon, QAction, QFont, QColor
-from PySide6.QtWidgets import QMainWindow, QTreeView, QAbstractItemView, QDialog, QMenu, QDockWidget, QLineEdit, \
-    QStatusBar, QLabel, QSizePolicy, QMenuBar, QMessageBox
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QTreeView,
+    QAbstractItemView,
+    QDialog,
+    QMenu,
+    QDockWidget,
+    QLineEdit,
+    QStatusBar,
+    QLabel,
+    QSizePolicy,
+    QMenuBar,
+    QMessageBox,
+)
 
 from backend.data_service import DataService
 from backend.models import Company, Role, Interview
@@ -24,9 +36,10 @@ VISIBLE_COLUMNS_COUNT = 3
 
 class RowType(Enum):
     """Enum to represent type of row."""
-    COMPANY = 'COMPANY'
-    ROLE = 'ROLE'
-    INTERVIEW = 'INTERVIEW'
+
+    COMPANY = "COMPANY"
+    ROLE = "ROLE"
+    INTERVIEW = "INTERVIEW"
 
 
 class MainWindow(QMainWindow):
@@ -64,24 +77,54 @@ class MainWindow(QMainWindow):
             row_type = item.item_data[4]
             match row_type:
                 case RowType.COMPANY:
-                    context_menu.addAction(QIcon(EDIT_ICON), "Edit Company", lambda: self._open_edit_window(index))
-                    context_menu.addAction(QIcon(DELETE_ICON), "Delete Company",
-                                           lambda: self._delete_row(index))
+                    context_menu.addAction(
+                        QIcon(EDIT_ICON),
+                        "Edit Company",
+                        lambda: self._open_edit_window(index),
+                    )
+                    context_menu.addAction(
+                        QIcon(DELETE_ICON),
+                        "Delete Company",
+                        lambda: self._delete_row(index),
+                    )
                     context_menu.addSeparator()
-                    context_menu.addAction(QIcon(ADD_ICON), "Add Role", lambda: self._open_new_window(index))
+                    context_menu.addAction(
+                        QIcon(ADD_ICON),
+                        "Add Role",
+                        lambda: self._open_new_window(index),
+                    )
                 case RowType.ROLE:
-                    context_menu.addAction(QIcon(EDIT_ICON), "Edit Role", lambda: self._open_edit_window(index))
-                    context_menu.addAction(QIcon(DELETE_ICON), "Delete Role",
-                                           lambda: self._delete_row(index))
+                    context_menu.addAction(
+                        QIcon(EDIT_ICON),
+                        "Edit Role",
+                        lambda: self._open_edit_window(index),
+                    )
+                    context_menu.addAction(
+                        QIcon(DELETE_ICON),
+                        "Delete Role",
+                        lambda: self._delete_row(index),
+                    )
                     context_menu.addSeparator()
-                    context_menu.addAction(QIcon(ADD_ICON), "Add Interview", lambda: self._open_new_window(index))
+                    context_menu.addAction(
+                        QIcon(ADD_ICON),
+                        "Add Interview",
+                        lambda: self._open_new_window(index),
+                    )
                 case _:
-                    context_menu.addAction(QIcon(EDIT_ICON), "Edit Interview",
-                                           lambda: self._open_edit_window(index))
-                    context_menu.addAction(QIcon(DELETE_ICON), "Delete Interview",
-                                           lambda: self._delete_row(index))
+                    context_menu.addAction(
+                        QIcon(EDIT_ICON),
+                        "Edit Interview",
+                        lambda: self._open_edit_window(index),
+                    )
+                    context_menu.addAction(
+                        QIcon(DELETE_ICON),
+                        "Delete Interview",
+                        lambda: self._delete_row(index),
+                    )
         else:
-            context_menu.addAction(QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(index))
+            context_menu.addAction(
+                QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(index)
+            )
 
         context_menu.exec(self.view.viewport().mapToGlobal(point))
 
@@ -98,7 +141,9 @@ class MainWindow(QMainWindow):
             case RowType.COMPANY:
                 row = index.row()
                 column = index.column()
-                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
+                if verify_delete_row(
+                    f"Are you sure you want to delete {item_data[0]}?", self
+                ):
                     self.data_service.delete_company(item_data[3])
                 else:
                     return
@@ -106,7 +151,9 @@ class MainWindow(QMainWindow):
                 company_index = index.parent()
                 row = company_index.row()
                 column = company_index.column()
-                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
+                if verify_delete_row(
+                    f"Are you sure you want to delete {item_data[0]}?", self
+                ):
                     self.data_service.delete_role(item_data[3])
                 else:
                     return
@@ -114,7 +161,9 @@ class MainWindow(QMainWindow):
                 company_index = index.parent().parent()
                 row = company_index.row()
                 column = company_index.column()
-                if verify_delete_row(f"Are you sure you want to delete {item_data[0]}?", self):
+                if verify_delete_row(
+                    f"Are you sure you want to delete {item_data[0]}?", self
+                ):
                     self.data_service.delete_interview(item_data[3])
                 else:
                     return
@@ -190,22 +239,32 @@ class MainWindow(QMainWindow):
             self.status_label.setText("Ready")
         else:
             self.status_label.setText(f"Search results: {len(data_model)} company(s)")
-        self.tree_model = CompaniesTreeModel(self.headers, data_model, self,
-                                             self.search_value.text() if data_model else "")
+        self.tree_model = CompaniesTreeModel(
+            self.headers,
+            data_model,
+            self,
+            self.search_value.text() if data_model else "",
+        )
         self.view.setModel(self.tree_model)
-        self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * .37))
-        self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * .25))
-        self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH * .37))
+        self.view.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * 0.37))
+        self.view.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * 0.25))
+        self.view.setColumnWidth(2, int(MAIN_WINDOW_WIDTH * 0.37))
 
     def _config_menu(self, menu_bar: QMenuBar):
         companies_menu = menu_bar.addMenu("Companies")
-        companies_menu.addAction(QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(None))
+        companies_menu.addAction(
+            QIcon(ADD_ICON), "Add Company", lambda: self._open_new_window(None)
+        )
 
         help_menu = menu_bar.addMenu("Help")
-        help_menu.addAction("About", lambda: QMessageBox.about(
-            self,
+        help_menu.addAction(
             "About",
-            "Next Job\n 0.4.0\n\nCopyright © 2024 Shahram Ensan\nMIT License"))
+            lambda: QMessageBox.about(
+                self,
+                "About",
+                "Next Job\n 0.4.0\n\nCopyright © 2024 Shahram Ensan\nMIT License",
+            ),
+        )
 
     def _get_dock_widget(self) -> QDockWidget:
         dock = QDockWidget(self)
@@ -215,8 +274,12 @@ class MainWindow(QMainWindow):
         self.search_value.textChanged.connect(self._search_text_changed)
         search_action = QAction(QIcon(SEARCH_ICON), "Search", self.search_value)
         reset_action = QAction(QIcon(RESET_ICON), "Reset", self.search_value)
-        self.search_value.addAction(reset_action, QLineEdit.ActionPosition.TrailingPosition)
-        self.search_value.addAction(search_action, QLineEdit.ActionPosition.TrailingPosition)
+        self.search_value.addAction(
+            reset_action, QLineEdit.ActionPosition.TrailingPosition
+        )
+        self.search_value.addAction(
+            search_action, QLineEdit.ActionPosition.TrailingPosition
+        )
         search_action.triggered.connect(self._search_action_triggered)
         reset_action.triggered.connect(self._reset_action_triggered)
         dock.setWidget(self.search_value)
@@ -225,11 +288,15 @@ class MainWindow(QMainWindow):
     def _get_status_bar(self) -> QStatusBar:
         status_bar = QStatusBar(self)
         self.status_label = QLabel("Ready")
-        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.status_label.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         self.companies_count = QLineEdit()
         self.companies_count.setReadOnly(True)
         self.companies_count.setDisabled(True)
-        self.companies_count.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        self.companies_count.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
+        )
         self.companies_count.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         status_bar.addWidget(self.status_label, 1)
@@ -257,7 +324,9 @@ class MainWindow(QMainWindow):
 class CompaniesTreeModel(BaseTreeModel):
     """Tree model for companies"""
 
-    def __init__(self, headers: list, data: List[Company], parent=None, search_value: str = ""):
+    def __init__(
+        self, headers: list, data: List[Company], parent=None, search_value: str = ""
+    ):
         super().__init__(headers, parent=parent)
         self.setup_model_data(data, self.root_item)
         self.search_value = search_value
@@ -265,13 +334,20 @@ class CompaniesTreeModel(BaseTreeModel):
     def data(self, index: QModelIndex, role: int = None):
         """Customization of data formatting."""
         if index.isValid():
-            if role == Qt.ItemDataRole.FontRole and index.column() == 0 and index.parent().column() == -1:
+            if (
+                role == Qt.ItemDataRole.FontRole
+                and index.column() == 0
+                and index.parent().column() == -1
+            ):
                 font = QFont()
                 font.setWeight(QFont.Weight.Bold)
                 return font
-            if (role == Qt.ItemDataRole.BackgroundRole and
-                    self.search_value and self.search_value.lower() in index.data().lower()):
-                return QColor('#9B6E59') if is_dark_theme() else QColor('#FAF691')
+            if (
+                role == Qt.ItemDataRole.BackgroundRole
+                and self.search_value
+                and self.search_value.lower() in index.data().lower()
+            ):
+                return QColor("#9B6E59") if is_dark_theme() else QColor("#FAF691")
         return super().data(index, role)
 
     def setup_model_data(self, companies: List[Company], parent: TreeItem):
@@ -312,6 +388,14 @@ class CompaniesTreeModel(BaseTreeModel):
         child = parent.last_child()
         child.set_data(0, f"({interview.sequence}) {interview.title}")
         child.set_data(1, f"{interview.date}, {interview.type.value}")
-        child.set_data(2, ", ".join([f"{p.name} ({p.role})" if p.role else p.name for p in interview.interviewers]))
+        child.set_data(
+            2,
+            ", ".join(
+                [
+                    f"{p.name} ({p.role})" if p.role else p.name
+                    for p in interview.interviewers
+                ]
+            ),
+        )
         child.set_data(3, interview.uuid)
         child.set_data(4, RowType.INTERVIEW)

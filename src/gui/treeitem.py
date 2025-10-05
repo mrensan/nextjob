@@ -5,12 +5,12 @@
 class TreeItem:
     """A tree item class for rendering tree view."""
 
-    def __init__(self, data: list, parent: 'TreeItem' = None):
+    def __init__(self, data: list, parent: "TreeItem" = None):
         self.item_data = data
         self.parent_item = parent
         self.child_items = []
 
-    def child(self, number: int): # -> 'TreeItem':
+    def child(self, number: int):  # -> 'TreeItem':
         """Returns the child item at position number."""
         if number < 0 or number >= len(self.child_items):
             return None
