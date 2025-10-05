@@ -48,15 +48,24 @@ class BaseTreeModel(QAbstractItemModel):
 
         return self.root_item
 
-    def headerData(self, section: int, orientation: Qt.Orientation,
-                   role: int = Qt.ItemDataRole.DisplayRole):
+    def headerData(
+        self,
+        section: int,
+        orientation: Qt.Orientation,
+        role: int = Qt.ItemDataRole.DisplayRole,
+    ):
         """Returns the header data for the given section and orientation."""
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+        if (
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
             return self.root_item.data(section)
 
         return None
 
-    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
+    def index(
+        self, row: int, column: int, parent: QModelIndex = QModelIndex()
+    ) -> QModelIndex:
         """Returns the index for the given row, column, and parent index."""
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
@@ -70,8 +79,9 @@ class BaseTreeModel(QAbstractItemModel):
             return self.createIndex(row, column, child_item)
         return QModelIndex()
 
-    def insertColumns(self, position: int, columns: int,
-                      parent: QModelIndex = QModelIndex()) -> bool:
+    def insertColumns(
+        self, position: int, columns: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
         """Inserts columns into the model."""
         self.beginInsertColumns(parent, position, position + columns - 1)
         success: bool = self.root_item.insert_columns(position, columns)
@@ -79,8 +89,9 @@ class BaseTreeModel(QAbstractItemModel):
 
         return success
 
-    def insertRows(self, position: int, rows: int,
-                   parent: QModelIndex = QModelIndex()) -> bool:
+    def insertRows(
+        self, position: int, rows: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
         """Inserts rows into the model."""
         parent_item: TreeItem = self.get_item(parent)
         if not parent_item:
@@ -109,8 +120,9 @@ class BaseTreeModel(QAbstractItemModel):
 
         return self.createIndex(parent_item.child_number(), 0, parent_item)
 
-    def removeColumns(self, position: int, columns: int,
-                      parent: QModelIndex = QModelIndex()) -> bool:
+    def removeColumns(
+        self, position: int, columns: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
         """Removes columns from the model."""
         self.beginRemoveColumns(parent, position, position + columns - 1)
         success: bool = self.root_item.remove_columns(position, columns)
@@ -121,8 +133,9 @@ class BaseTreeModel(QAbstractItemModel):
 
         return success
 
-    def removeRows(self, position: int, rows: int,
-                   parent: QModelIndex = QModelIndex()) -> bool:
+    def removeRows(
+        self, position: int, rows: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
         """Removes rows from the model."""
         parent_item: TreeItem = self.get_item(parent)
         if not parent_item:
@@ -154,15 +167,14 @@ class BaseTreeModel(QAbstractItemModel):
 
         if result:
             self.dataChanged.emit(
-                index,
-                index,
-                [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole]
+                index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole]
             )
 
         return result
 
-    def setHeaderData(self, section: int, orientation: Qt.Orientation, value,
-                      role: int = None) -> bool:
+    def setHeaderData(
+        self, section: int, orientation: Qt.Orientation, value, role: int = None
+    ) -> bool:
         """Sets the header data for the given section and orientation."""
         if role != Qt.ItemDataRole.EditRole or orientation != Qt.Orientation.Horizontal:
             return False

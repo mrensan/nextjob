@@ -9,8 +9,18 @@ from pydantic import ValidationError
 from backend.data_service import DataService
 from backend.models import Company, InterviewType, Interview, Role
 from gui.desctextedit import DescriptionTextEdit
-from gui.guiutils import get_line_layout, create_save_cancel_layout, get_attr, verify_delete_row, DELETE_ICON, \
-    EDIT_ICON, ADD_ICON, translate_validation_error, translate_date_format_error, show_error_dialog
+from gui.guiutils import (
+    get_line_layout,
+    create_save_cancel_layout,
+    get_attr,
+    verify_delete_row,
+    DELETE_ICON,
+    EDIT_ICON,
+    ADD_ICON,
+    translate_validation_error,
+    translate_date_format_error,
+    show_error_dialog,
+)
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 
@@ -63,18 +73,20 @@ class InterviewWindow(QDialog):
 
         description_label = QLabel("Description:")
         vertical.addWidget(description_label)
-        self.description_value = DescriptionTextEdit(get_attr(self.interview, "description"))
+        self.description_value = DescriptionTextEdit(
+            get_attr(self.interview, "description")
+        )
         vertical.addWidget(self.description_value)
 
         interviewers_label = QLabel("Interviewers:")
         vertical.addWidget(interviewers_label)
 
         self.interviewers_table, self.interviewers_model = create_person_table_view(
-            get_attr(self.interview, "interviewers", []),
-            self,
-            MAIN_WINDOW_WIDTH
+            get_attr(self.interview, "interviewers", []), self, MAIN_WINDOW_WIDTH
         )
-        self.interviewers_table.customContextMenuRequested.connect(self._open_context_menu)
+        self.interviewers_table.customContextMenuRequested.connect(
+            self._open_context_menu
+        )
         vertical.addWidget(self.interviewers_table)
 
         vertical.addLayout(create_save_cancel_layout(self._cancel, self._save))
@@ -85,15 +97,29 @@ class InterviewWindow(QDialog):
         index = self.interviewers_table.indexAt(point)
         context_menu = QMenu()
         if index.isValid():
-            context_menu.addAction(QIcon(EDIT_ICON), "Edit Interviewer", lambda: self._open_interviewer_window(index))
-            context_menu.addAction(QIcon(DELETE_ICON), "Delete Interviewer",
-                                   lambda: self._delete_interviewer_row(index))
+            context_menu.addAction(
+                QIcon(EDIT_ICON),
+                "Edit Interviewer",
+                lambda: self._open_interviewer_window(index),
+            )
+            context_menu.addAction(
+                QIcon(DELETE_ICON),
+                "Delete Interviewer",
+                lambda: self._delete_interviewer_row(index),
+            )
         else:
             if self.interview:
-                context_menu.addAction(QIcon(ADD_ICON), "Add Interviewer", lambda: self._open_interviewer_window(index))
+                context_menu.addAction(
+                    QIcon(ADD_ICON),
+                    "Add Interviewer",
+                    lambda: self._open_interviewer_window(index),
+                )
             else:
-                context_menu.addAction(QIcon(ADD_ICON), "Save Interview and Add Interviewer",
-                                       lambda: self._save_interview_and_open_interviewer_window(index))
+                context_menu.addAction(
+                    QIcon(ADD_ICON),
+                    "Save Interview and Add Interviewer",
+                    lambda: self._save_interview_and_open_interviewer_window(index),
+                )
 
         context_menu.exec(self.interviewers_table.viewport().mapToGlobal(point))
 
@@ -109,14 +135,19 @@ class InterviewWindow(QDialog):
 
     def _delete_interviewer_row(self, index: QModelIndex):
         item_data = self.interviewers_model.get_item(index).item_data
-        if verify_delete_row(f"Are you sure you want to delete interviewer: {item_data[0]} {item_data[1]}?", self):
+        if verify_delete_row(
+            f"Are you sure you want to delete interviewer: {item_data[0]} {item_data[1]}?",
+            self,
+        ):
             self.data_service.delete_interviewer(item_data[5], self.interview.uuid)
             self._set_interviewer_table_model()
 
     def _set_interviewer_table_model(self):
         self.company = self.data_service.get_company_by_uuid(self.company.uuid)
         self.interview = self._find_interview(self.interview.uuid, self.company)
-        set_person_table_model(self.interview.interviewers, self.interviewers_table, self)
+        set_person_table_model(
+            self.interview.interviewers, self.interviewers_table, self
+        )
 
     @staticmethod
     def _find_interview(interview_uuid: str, company: Company):
@@ -157,7 +188,7 @@ class InterviewWindow(QDialog):
                     sequence=sequence_value,
                     title=title_value,
                     type=type_value,
-                    date=date_value
+                    date=date_value,
                 )
                 self.role.interviews.append(self.interview)
             else:

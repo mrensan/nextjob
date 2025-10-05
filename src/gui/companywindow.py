@@ -10,8 +10,18 @@ from backend.data_service import DataService
 from backend.htmlextractor import get_html_text
 from backend.models import Company, Role
 from gui.basetreemodel import BaseTreeModel
-from gui.guiutils import get_line_layout, create_save_cancel_layout, config_view_as_line_selectable, get_attr, \
-    verify_delete_row, EDIT_ICON, DELETE_ICON, ADD_ICON, translate_validation_error, show_error_dialog
+from gui.guiutils import (
+    get_line_layout,
+    create_save_cancel_layout,
+    config_view_as_line_selectable,
+    get_attr,
+    verify_delete_row,
+    EDIT_ICON,
+    DELETE_ICON,
+    ADD_ICON,
+    translate_validation_error,
+    show_error_dialog,
+)
 from gui.personstablemodel import create_person_table_view, set_person_table_model
 from gui.personwindow import PersonWindow
 from gui.treeitem import TreeItem
@@ -47,8 +57,11 @@ class CompanyWindow(QDialog):
         vertical.addWidget(recruiters_label)
 
         self.recruiters_table, self.recruiters_model = create_person_table_view(
-            get_attr(company, "recruiters", []), self, MAIN_WINDOW_WIDTH)
-        self.recruiters_table.customContextMenuRequested.connect(self._open_context_menu)
+            get_attr(company, "recruiters", []), self, MAIN_WINDOW_WIDTH
+        )
+        self.recruiters_table.customContextMenuRequested.connect(
+            self._open_context_menu
+        )
         vertical.addWidget(self.recruiters_table)
 
         roles_label = QLabel("Roles:")
@@ -56,8 +69,16 @@ class CompanyWindow(QDialog):
 
         self.roles_table = QTableView()
         config_view_as_line_selectable(self.roles_table)
-        headers = ["Title", "Applied Date", "Employment Type", "Work Location", "Description"]
-        self.interviewers_model = RolesTableModel(headers, get_attr(self.company, "roles", []), self)
+        headers = [
+            "Title",
+            "Applied Date",
+            "Employment Type",
+            "Work Location",
+            "Description",
+        ]
+        self.interviewers_model = RolesTableModel(
+            headers, get_attr(self.company, "roles", []), self
+        )
         self.roles_table.setModel(self.interviewers_model)
         self.roles_table.setColumnWidth(0, int(MAIN_WINDOW_WIDTH * 2.3 / 10))
         self.roles_table.setColumnWidth(1, int(MAIN_WINDOW_WIDTH * 1.2 / 10))
@@ -74,15 +95,29 @@ class CompanyWindow(QDialog):
         index = self.recruiters_table.indexAt(point)
         context_menu = QMenu()
         if index.isValid():
-            context_menu.addAction(QIcon(EDIT_ICON), "Edit Recruiter", lambda: self._open_recruiter_window(index))
-            context_menu.addAction(QIcon(DELETE_ICON), "Delete Recruiter",
-                                   lambda: self._delete_recruiter_row(index))
+            context_menu.addAction(
+                QIcon(EDIT_ICON),
+                "Edit Recruiter",
+                lambda: self._open_recruiter_window(index),
+            )
+            context_menu.addAction(
+                QIcon(DELETE_ICON),
+                "Delete Recruiter",
+                lambda: self._delete_recruiter_row(index),
+            )
         else:
             if self.company:
-                context_menu.addAction(QIcon(ADD_ICON), "Add Recruiter", lambda: self._open_recruiter_window(index))
+                context_menu.addAction(
+                    QIcon(ADD_ICON),
+                    "Add Recruiter",
+                    lambda: self._open_recruiter_window(index),
+                )
             else:
-                context_menu.addAction(QIcon(ADD_ICON), "Save Company and Add Recruiter",
-                                       lambda: self._save_company_and_open_recruiter_window(index))
+                context_menu.addAction(
+                    QIcon(ADD_ICON),
+                    "Save Company and Add Recruiter",
+                    lambda: self._save_company_and_open_recruiter_window(index),
+                )
 
         context_menu.exec(self.recruiters_table.viewport().mapToGlobal(point))
 
@@ -98,7 +133,10 @@ class CompanyWindow(QDialog):
 
     def _delete_recruiter_row(self, index: QModelIndex):
         item_data = self.recruiters_model.get_item(index).item_data
-        if verify_delete_row(f"Are you sure you want to delete recruiter: {item_data[0]} {item_data[1]}?", self):
+        if verify_delete_row(
+            f"Are you sure you want to delete recruiter: {item_data[0]} {item_data[1]}?",
+            self,
+        ):
             self.data_service.delete_recruiter(item_data[5], self.company.uuid)
             self._set_recruiter_table_model()
 

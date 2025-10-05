@@ -8,37 +8,42 @@ from pydantic import BaseModel, Field
 
 class TITLE(Enum):
     """Enum to represent title of a person."""
-    MR = 'Mr'
-    MS = 'Ms'
-    NA = '-'
+
+    MR = "Mr"
+    MS = "Ms"
+    NA = "-"
 
 
 class InterviewType(Enum):
     """Enum to represent type of interview."""
-    RECRUITER = 'Recruiter'
-    TECH_CODE = 'Code technical'
-    TECH_DESIGN = 'Design technical'
-    TECH_GENERAL = 'General technical'
-    REC_MANAGER = 'Recruiter manager'
-    TEAM = 'Team'
+
+    RECRUITER = "Recruiter"
+    TECH_CODE = "Code technical"
+    TECH_DESIGN = "Design technical"
+    TECH_GENERAL = "General technical"
+    REC_MANAGER = "Recruiter manager"
+    TEAM = "Team"
 
 
 class WorkLocation(Enum):
     """Enum to represent work location type."""
-    ON_SITE = 'On site'
-    HYBRID = 'Hybrid'
-    REMOTE = 'Remote'
+
+    ON_SITE = "On site"
+    HYBRID = "Hybrid"
+    REMOTE = "Remote"
 
 
 class EmploymentType(Enum):
     """Enum to represent employment type."""
-    FULL_TIME = 'Full time'
-    PART_TIME = 'Part time'
-    CONTRACT = 'Contract'
+
+    FULL_TIME = "Full time"
+    PART_TIME = "Part time"
+    CONTRACT = "Contract"
 
 
 class Person(BaseModel):
     """Model representing a person with first name, last name, and other properties."""
+
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     name: str = Field(..., min_length=1)
     role: Optional[str] = None
@@ -49,6 +54,7 @@ class Person(BaseModel):
 
 class Interview(BaseModel):
     """Model representing an interview."""
+
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     sequence: int
     title: str = Field(..., min_length=1)
@@ -60,6 +66,7 @@ class Interview(BaseModel):
 
 class Role(BaseModel):
     """Model representing an applied role."""
+
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     title: str = Field(..., min_length=1)
     applied_date: date
@@ -71,6 +78,7 @@ class Role(BaseModel):
 
 class Company(BaseModel):
     """Model representing a company."""
+
     uuid: str = Field(default_factory=lambda: str(uuid4()))
     name: str = Field(..., min_length=1)
     website: Optional[str] = None

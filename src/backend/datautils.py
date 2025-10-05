@@ -20,12 +20,12 @@ def get_log_file():
 
 log_file = get_log_file()
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(log_file, mode="a", encoding="utf-8")
-    ]
+        logging.FileHandler(log_file, mode="a", encoding="utf-8"),
+    ],
 )
 
 
@@ -42,7 +42,7 @@ def get_data_file():
     return data_dir / "db.json"
 
 
-def flatten_dict(d, parent_key=''):
+def flatten_dict(d, parent_key=""):
     """Flatten a dictionary."""
     items = []
     for k, v in d.items():
@@ -62,6 +62,7 @@ def flatten_dict(d, parent_key=''):
 
 def sort_companies_by_applied_date(companies):
     """Sorts companies by the most recent applied_date in descending order"""
+
     def get_most_recent_applied_date(company):
         """Gets the most recent applied_date for a company's roles"""
         if not company.roles:

@@ -1,13 +1,25 @@
 import logging
 from typing import Optional
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QLineEdit, QTextEdit
+from PySide6.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QComboBox,
+    QLineEdit,
+    QTextEdit,
+)
 from pydantic import ValidationError
 
 from backend.data_service import DataService
 from backend.models import Company, TITLE, Person, Interview
-from gui.guiutils import get_line_layout, get_attr, create_save_cancel_layout, translate_validation_error, \
-    show_error_dialog
+from gui.guiutils import (
+    get_line_layout,
+    get_attr,
+    create_save_cancel_layout,
+    translate_validation_error,
+    show_error_dialog,
+)
 
 MAIN_WINDOW_WIDTH = 700
 
@@ -18,12 +30,18 @@ class PersonWindow(QDialog):
     def __init__(self, item_data: list, company: Company, interview: Interview = None):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.setWindowTitle(f"{'Recruiter' if interview is None else 'Interviewer'} Details")
+        self.setWindowTitle(
+            f"{'Recruiter' if interview is None else 'Interviewer'} Details"
+        )
         self.resize(MAIN_WINDOW_WIDTH, 250)
 
         self.company = company
         self.interview = interview
-        self.person = self._find_person(item_data[5], company, interview) if len(item_data) > 5 else None
+        self.person = (
+            self._find_person(item_data[5], company, interview)
+            if len(item_data) > 5
+            else None
+        )
 
         vertical = QVBoxLayout()
         title_label = QLabel("Title:")
@@ -87,7 +105,9 @@ class PersonWindow(QDialog):
             show_error_dialog(self, "Validation Error", translate_validation_error(e))
 
     @staticmethod
-    def _find_person(person_uuid: str, company: Company, interview: Interview) -> Optional[Person]:
+    def _find_person(
+        person_uuid: str, company: Company, interview: Interview
+    ) -> Optional[Person]:
         if interview is None:
             for recruiter in company.recruiters:
                 if recruiter.uuid == person_uuid:
